@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="planets_array">
+        <item>Bus stops</item>
+        <item>Car parking</item>
+        <item>Trees</item>
+        <item>Breakdowns</item>
+        <item>Flytipping</item>
+        <item>Traffic lights</item>
+        <item>Street lighting</item>
+        <item>Street cleaning</item>
+        <item>Rubbish (refuse and recycling)</item>
+        <item>Road traffic signs</item>
+        <item>Roads/highways</item>
+        <item>Public toilets</item>
+        <item>Street nameplates</item>
+        <item>Pavements/footpaths</item>
+        <item>Parks/landscapes</item>
+        <item>Other</item>
+
+    </string-array>
+</resources>
