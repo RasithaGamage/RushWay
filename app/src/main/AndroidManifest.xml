@@ -23,13 +23,13 @@
             </intent-filter>
         </activity>
         <activity android:name=".SubmitForm" />
-        <activity
-            android:name=".MapPopUp"
-            android:theme="@style/AppTheme.CustomTheme" />
+        <!--<activity-->
+            <!--android:name=".MapPopUp"-->
+            <!--android:theme="@style/AppTheme.CustomTheme" />-->
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyBVhaXHbBzJM0oJcNqrFNQWR_hyGUG4vq0" />
+            android:value= "@string/api_key" />
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
