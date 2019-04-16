@@ -26,21 +26,43 @@
         android:id="@+id/relLayout"
         >
         <ImageView
-            android:layout_width="30dp"
-            android:layout_height="30dp"
+            android:layout_width="45dp"
+            android:layout_height="match_parent"
             android:id="@+id/ic_search"
             android:layout_centerVertical="true"
-            android:layout_marginLeft="10dp"
-            android:src="@drawable/ic_search"/>
+            android:layout_marginLeft="0dp"
+            android:src="@drawable/ic_menu_vert"
+            android:background="@drawable/button_layout" />
         <AutoCompleteTextView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_toRightOf="@id/ic_search"
-            android:textSize="12dp"
+            android:layout_marginLeft="10dp"
+            android:textSize="15dp"
             android:textColor="#000"
             android:background="@null"
             android:id="@+id/inputSearch"
-            android:hint="  Search places (Address/City/Zip Code ..)"/>
+            android:hint="Where to go ?"/>
+
+    </RelativeLayout>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp">
+
+        <Spinner
+            android:id="@+id/spinner1"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="@drawable/button_layout"
+            android:spinnerMode="dropdown"
+            android:dropDownVerticalOffset="55dp"
+            android:popupBackground="@drawable/button_layout"
+            android:textSize="15dp"
+            android:textColor="#8e8e8e"
+            />
 
     </RelativeLayout>
 

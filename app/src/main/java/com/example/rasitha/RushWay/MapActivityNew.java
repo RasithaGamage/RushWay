@@ -2,6 +2,7 @@ package com.example.rasitha.RushWay;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -17,9 +18,11 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -68,6 +71,7 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
 
     private AutoCompleteTextView mSearchText ;
     private ImageView mGps,mInfo;
+    private Spinner mSpinner;
 
 
     private GoogleMap mMap;
@@ -79,6 +83,7 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
     private Marker mMarker;
     private Polyline mCurrentPolyline;
     private Location mCurrentLocation;
+
 
 
     private static final LatLngBounds LAT_LNG_BOUNDS = new LatLngBounds(
@@ -115,6 +120,17 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map_new);
         getSupportActionBar().hide();
+
+        mSpinner = (Spinner) findViewById(R.id.spinner1);
+        List<String> list = new ArrayList<String>();
+        list.add("Select location on map");
+        list.add("Select location from saved places");
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,  android.R.layout.simple_spinner_item, list);
+        adapter.setDropDownViewResource(R.layout.spinner_item_layout);
+        mSpinner.setAdapter(adapter);
+
+
         mSearchText = (AutoCompleteTextView) findViewById(R.id.inputSearch) ;
         mGps = (ImageView) findViewById(R.id.ic_gps) ;
         mInfo= (ImageView) findViewById(R.id.place_info);
@@ -277,6 +293,7 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
         }catch (SecurityException e){
             Log.e(TAG,"getLDeviceLocation: SecurityException: "+e.getMessage());
         }
+
     }
 
     private void moveCamera(LatLng latLng, float zoom,PlaceInfo placeinfo){
@@ -425,6 +442,7 @@ private void hideSoftKeyboard() {
 
         return url;
     }
+
 
 
 }
