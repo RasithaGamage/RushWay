@@ -10,23 +10,37 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Html;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
+import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.rasitha.RushWay.directionHelpers.FetchURL;
+import com.example.rasitha.RushWay.directionHelpers.TaskLoadedCallback;
+import com.example.rasitha.RushWay.models.PlaceInfo;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.location.FusedLocationProviderApi;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.maps.model.RuntimeRemoteException;
+import com.google.android.libraries.places.compat.AutocompletePrediction;
 import com.google.android.libraries.places.compat.GeoDataClient;
+import com.google.android.libraries.places.compat.Place;
+import com.google.android.libraries.places.compat.PlaceBuffer;
+import com.google.android.libraries.places.compat.PlaceBufferResponse;
 import com.google.android.libraries.places.compat.Places;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -43,7 +57,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallback,GoogleApiClient.OnConnectionFailedListener {
+public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallback,GoogleApiClient.OnConnectionFailedListener,TaskLoadedCallback {
 
     private static final String FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION;
     private static final String COARSE_LOCATION = Manifest.permission.ACCESS_COARSE_LOCATION;
@@ -53,13 +67,19 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
     private static final String TAG = "MapActivityNew";
 
     private AutoCompleteTextView mSearchText ;
-    private ImageView mGps;
+    private ImageView mGps,mInfo;
+
 
     private GoogleMap mMap;
     private Boolean mLocationPermissionGranted = false;
     private FusedLocationProviderClient mFusedLocationProviderClient;
     private PlaceAutocompleteAdapter mPlaceAutocompleteAdapter;
     private GeoDataClient mGoogleApiClient;
+    private PlaceInfo mPlace;
+    private Marker mMarker;
+    private Polyline mCurrentPolyline;
+    private Location mCurrentLocation;
+
 
     private static final LatLngBounds LAT_LNG_BOUNDS = new LatLngBounds(
             new LatLng(-40,-168),new LatLng(71,136)
@@ -97,11 +117,18 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
         getSupportActionBar().hide();
         mSearchText = (AutoCompleteTextView) findViewById(R.id.inputSearch) ;
         mGps = (ImageView) findViewById(R.id.ic_gps) ;
+        mInfo= (ImageView) findViewById(R.id.place_info);
 
         getLocationPermission();
 
+    }
 
-
+    @Override
+    public void onTaskDone(Object... values) {
+        if(mCurrentPolyline!=null){
+            mCurrentPolyline.remove();
+        }
+        mCurrentPolyline = mMap.addPolyline((PolylineOptions) values[0]);
     }
 
     private void geolocate() {
@@ -138,6 +165,7 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
 
 
         mGoogleApiClient = Places.getGeoDataClient(this,null);
+        mSearchText.setOnItemClickListener(mAutoCompleteClickListener);
 
         mPlaceAutocompleteAdapter = new PlaceAutocompleteAdapter( this,mGoogleApiClient,LAT_LNG_BOUNDS,null);
         mSearchText.setAdapter(mPlaceAutocompleteAdapter);
@@ -164,6 +192,24 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
             public void onClick(View view) {
                 Log.d(TAG,"onClick: Clicked gps icon");
                 getLDeviceLocation();
+            }
+        });
+
+        mInfo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try{
+                   if(mMarker.isInfoWindowShown()){
+                       mMarker.hideInfoWindow();
+                   }
+                   else
+                   {
+                       mMarker.showInfoWindow();
+                   }
+                }
+                catch (NullPointerException ex){
+
+                }
             }
         });
 
@@ -217,6 +263,7 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
                         if(task.isSuccessful()){
                             Log.d(TAG,"onComplete: found location !");
                             Location currentLocation = (Location) task.getResult();
+                            mCurrentLocation = currentLocation;
                             moveCamera( new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude()),DEFAULT_ZOOM,"My location");
                         }
                         else{
@@ -230,6 +277,45 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
         }catch (SecurityException e){
             Log.e(TAG,"getLDeviceLocation: SecurityException: "+e.getMessage());
         }
+    }
+
+    private void moveCamera(LatLng latLng, float zoom,PlaceInfo placeinfo){
+        Log.d(TAG,"moveCamer: moving the camera to: lat:"+latLng.latitude+" long:"+latLng.longitude);
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,zoom));
+
+        mMap.clear();
+        if(placeinfo !=null){
+            try{
+                String snippet = "Address" + placeinfo.getAddress() +"\n"
+                        +"Phone Number" + placeinfo.getPhonenumber() +"\n"
+                        +"Website" + placeinfo.getWebSite() +"\n"
+                        +"Rating" + placeinfo.getRating() +"\n";
+
+                MarkerOptions options  = new MarkerOptions()
+                        .position(latLng)
+                        .title(placeinfo.getName())
+                        .snippet(snippet);
+                mMarker = mMap.addMarker(options);
+
+                MarkerOptions options1 = new MarkerOptions()
+                        .position(new LatLng(mCurrentLocation.getLatitude(),mCurrentLocation.getLongitude()))
+                        .title("My Location");
+                mMap.addMarker(options1);
+
+                showDirections(new LatLng(mCurrentLocation.getLatitude(),mCurrentLocation.getLongitude())
+                        ,latLng
+                        , "driving");
+
+            }
+            catch (NullPointerException ex){
+                Log.e(TAG,"moveCamera: NullPointerException "+ex.getMessage());
+            }
+
+        }else
+        {
+            mMap.addMarker(new MarkerOptions().position(latLng));
+        }
+        hideSoftKeyboard();
     }
 
     private void moveCamera(LatLng latLng, float zoom,String title){
@@ -269,6 +355,75 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
 
 private void hideSoftKeyboard() {
         this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    private AdapterView.OnItemClickListener mAutoCompleteClickListener  = new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+            hideSoftKeyboard();
+            final AutocompletePrediction item = mPlaceAutocompleteAdapter.getItem(i);
+            final String placeId = item.getPlaceId();
+
+            Task<PlaceBufferResponse> placeResult = mGoogleApiClient.getPlaceById(placeId);
+            placeResult.addOnCompleteListener(mUpdatePlaceDetailsCallback);
+
+        }
+    };
+
+    private OnCompleteListener<PlaceBufferResponse> mUpdatePlaceDetailsCallback
+            = new OnCompleteListener<PlaceBufferResponse>() {
+        @Override
+        public void onComplete(Task<PlaceBufferResponse> task) {
+            try {
+                PlaceBufferResponse places = task.getResult();
+
+                // Get the Place object from the buffer.
+                final Place place = places.get(0);
+
+                try{
+                    mPlace = new PlaceInfo() ;
+                    mPlace.setAddress(place.getAddress().toString());
+                    mPlace.setName(place.getName().toString());
+                    mPlace.setPhonenumber(place.getPhoneNumber().toString());
+                    mPlace.setLatlng(place.getLatLng());
+                    mPlace.setRating(place.getRating());
+                    mPlace.setWebSite(place.getWebsiteUri());
+                    mPlace.setId(place.getId());
+
+                }catch (NullPointerException ex){
+                    Log.e(TAG,"onComplete: NullPointerException " + ex.getMessage());
+                }
+
+                moveCamera(new LatLng(place.getViewport().getCenter().latitude,
+                        place.getViewport().getCenter().longitude),DEFAULT_ZOOM,mPlace);
+                places.release();
+            } catch (RuntimeRemoteException e) {
+
+                Log.e(TAG, "Place query did not complete.", e);
+
+                return;
+            }
+        }
+    };
+
+    private void showDirections(LatLng origin,LatLng destination, String travelMode){
+        String url = getDirectionsUrl(origin,destination,travelMode);
+        new FetchURL(MapActivityNew.this).execute(url,"driving");
+    }
+
+    private String getDirectionsUrl(LatLng origin,LatLng destination, String travelMode ){
+
+        String str_origin = "origin=" + origin.latitude + "," + origin.longitude;
+        String str_dest = "destination=" + destination.latitude + "," + destination.longitude ;
+        String mode = "mode="+travelMode;
+        String params  = str_origin+"&"+str_dest+"&"+mode;
+        String output = "json";
+
+        String url =  "https://maps.googleapis.com/maps/api/directions/"+output+"?"+params+"&key="+BuildConfig.ApiKey;
+
+        return url;
     }
 
 
