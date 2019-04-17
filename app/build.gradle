@@ -13,7 +13,7 @@ android {
         buildConfigField 'String', "ApiKey", MyApiKey
         resValue 'string', "api_key", MyApiKey
         buildConfigField 'String', "firebase_api_key", MyApiKey
-        resValue 'string', "firebase_api_key",firebaseAPI
+        resValue 'string', "firebase_api_key", firebaseAPI
     }
     buildTypes {
         release {
@@ -22,7 +22,7 @@ android {
             buildConfigField 'String', "ApiKey", MyApiKey
             resValue 'string', "api_key", MyApiKey
             buildConfigField 'String', "firebase_api_key", MyApiKey
-            resValue 'string', "firebase_api_key",firebaseAPI
+            resValue 'string', "firebase_api_key", firebaseAPI
         }
     }
 }

@@ -64,4 +64,8 @@
         <item>9 Points</item>
         <item>8 Points</item>
     </string-array>
+
+    <string name="title_activity_create_account">CreateAccountActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
 </resources>

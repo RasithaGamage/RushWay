@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -19,6 +20,7 @@ public class Home extends AppCompatActivity {
 
     Button btnSnap ;
     ImageButton btnLeaderBoard;
+    Button btnSignIn;
 
     private static final String TAG = "Home";
     private static final int ERROR_DIALOG_REQUEST =9001;
@@ -33,6 +35,7 @@ public class Home extends AppCompatActivity {
 
         btnSnap = (Button) findViewById(R.id.btnSnap);
         btnLeaderBoard = (ImageButton) findViewById(R.id.btnLeaderBoard);
+        btnSignIn = (Button) findViewById(R.id.btnSignIn);
 
         btnSnap.setOnClickListener(new View.OnClickListener(){
                                                   @Override
@@ -42,6 +45,16 @@ public class Home extends AppCompatActivity {
                                                   }
                                               }
     );
+
+        btnSignIn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent newActivityLoad = new Intent(Home.this,CreateAccountActivity.class);
+                startActivity(newActivityLoad);
+
+            }
+        });
+
         if (isServicesOK()){
             init();
         }
@@ -79,5 +92,7 @@ public class Home extends AppCompatActivity {
         }
         return false;
     }
+
+
 
 }
