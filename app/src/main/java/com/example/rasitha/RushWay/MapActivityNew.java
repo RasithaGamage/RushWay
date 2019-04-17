@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -35,7 +36,12 @@ import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.location.FusedLocationProviderApi;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.RuntimeRemoteException;
@@ -55,10 +61,15 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.google.android.gms.location.LocationServices.getFusedLocationProviderClient;
 
 public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallback,GoogleApiClient.OnConnectionFailedListener,TaskLoadedCallback {
 
@@ -83,6 +94,11 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
     private Marker mMarker;
     private Polyline mCurrentPolyline;
     private Location mCurrentLocation;
+    private DatabaseReference mDatabase;
+    private LocationRequest mLocationRequest;
+
+    private long UPDATE_INTERVAL = 10 * 1000;  /* 10 secs */
+    private long FASTEST_INTERVAL = 2000; /* 2 sec */
 
 
 
@@ -130,14 +146,55 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
         adapter.setDropDownViewResource(R.layout.spinner_item_layout);
         mSpinner.setAdapter(adapter);
 
-
         mSearchText = (AutoCompleteTextView) findViewById(R.id.inputSearch) ;
         mGps = (ImageView) findViewById(R.id.ic_gps) ;
         mInfo= (ImageView) findViewById(R.id.place_info);
 
+        FirebaseApp.initializeApp(this);
+        mDatabase= FirebaseDatabase.getInstance().getReference();
         getLocationPermission();
+        FirebaseApp.initializeApp(this);
+
+        startLocationUpdates();
 
     }
+
+    private void startLocationUpdates() {
+        mLocationRequest = new LocationRequest();
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequest.setInterval(UPDATE_INTERVAL);
+        mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
+
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
+        builder.addLocationRequest(mLocationRequest);
+        LocationSettingsRequest locationSettingsRequest = builder.build();
+
+        SettingsClient settingsClient = LocationServices.getSettingsClient(this);
+        settingsClient.checkLocationSettings(locationSettingsRequest);
+
+        getFusedLocationProviderClient(this).requestLocationUpdates(mLocationRequest, new LocationCallback() {
+                    @Override
+                    public void onLocationResult(LocationResult locationResult) {
+                        // do work here
+                        if (!locationResult.getLastLocation().equals(null))
+                        {
+                            mDatabase.child("current_location").child("lat").setValue(locationResult.getLastLocation().getLatitude());
+                            mDatabase.child("current_location").child("lng").setValue(locationResult.getLastLocation().getLongitude());
+                        }
+                    }
+                },
+                Looper.myLooper());
+    }
+
+//    public void onLocationChanged(Location location) {
+//        // New location has now been determined
+//        String msg = "Updated Location: " +
+//                Double.toString(location.getLatitude()) + "," +
+//                Double.toString(location.getLongitude());
+//        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+//        // You can now create a LatLng Object for use with maps
+//        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+//    }
 
     @Override
     public void onTaskDone(Object... values) {
@@ -268,7 +325,7 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
 
     private void getLDeviceLocation(){
         Log.d(TAG,"getDeviceLocation: getting the devices current location");
-        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        mFusedLocationProviderClient = getFusedLocationProviderClient(this);
 
         try{
             if(mLocationPermissionGranted){
