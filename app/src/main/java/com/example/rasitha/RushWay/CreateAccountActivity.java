@@ -1,30 +1,47 @@
 package com.example.rasitha.RushWay;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.rasitha.RushWay.models.User;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class CreateAccountActivity extends AppCompatActivity {
 
-private EditText fName;
-private EditText lName;
-private EditText phone;
-private EditText email;
-private EditText nic;
-private EditText pw1;
-private EditText pw2;
+private EditText fName,lName,phone,email,nic,pw1,pw2;
 private Button submitButton;
+
+private FirebaseAuth mAuth;
+
+private static final String TAG = "CreateAccountActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_account);
         getSupportActionBar().hide();
+
+        boolean x = isInternetOn();
+
+        Log.d(TAG,"Internet "+x);
+
+        mAuth = FirebaseAuth.getInstance();
+//        while (mAuth == null) {
+//
+//        }
 
         fName = (EditText) findViewById(R.id.editTextFname);
         lName = (EditText) findViewById(R.id.editTextLname);
@@ -41,16 +58,82 @@ private Button submitButton;
                 User user_obj = new User(fName.getText().toString(),lName.getText().toString(),
                         phone.getText().toString(),email.getText().toString(),nic.getText().toString());
 
-                if(pw2.getText().toString().equals(pw1.getText().toString())){
+                user_obj.setPw(pw2.getText().toString());
+                createAccount();
 
-                    user_obj.setPw(pw2.getText().toString());
-                }
-                else
-                {
-                    Toast.makeText(CreateAccountActivity.this,"Passwords not matching",Toast.LENGTH_SHORT);
-                }
             }
         });
+    }
+
+
+private void createAccount(){
+
+    if(pw2.getText().toString().equals(pw1.getText().toString())){
+
+    }
+    else
+    {
+        Toast.makeText(CreateAccountActivity.this,"Passwords not matching",Toast.LENGTH_SHORT);
+    }
+
+    Toast.makeText(CreateAccountActivity.this, email.getText().toString()+" PW: "+pw1.getText().toString(),
+            Toast.LENGTH_SHORT).show();
+
+    if (mAuth != null)  {
+
+        Toast.makeText(CreateAccountActivity.this, "Not null",
+                Toast.LENGTH_SHORT).show();
+    }
+    if (mAuth == null)
+    {
+        Toast.makeText(CreateAccountActivity.this, "null",
+                Toast.LENGTH_SHORT).show();
+    }
+
+//                    mAuth.createUserWithEmailAndPassword(email.getText().toString(), pw1.getText().toString())
+//                            .addOnCompleteListener(CreateAccountActivity.this, new OnCompleteListener<AuthResult>() {
+//                                @Override
+//                                public void onComplete(@NonNull Task<AuthResult> task) {
+//                                    if (task.isSuccessful()) {
+//                                        // Sign in success, update UI with the signed-in user's information
+//                                        Log.d(TAG, "createUserWithEmail:success");
+//                                        FirebaseUser user = mAuth.getCurrentUser();
+//                                        // updateUI(user);
+//                                    } else {
+//                                        // If sign in fails, display a message to the user.
+//                                        Log.w(TAG, "createUserWithEmail:failure", task.getException());
+//                                        Toast.makeText(CreateAccountActivity.this, "Authentication failed.",
+//                                                Toast.LENGTH_SHORT).show();
+//                                        //updateUI(null);
+//                                    }
+//                                }
+//                            });
+
+}
+
+    public boolean isInternetOn() {
+
+        // get Connectivity Manager object to check connection
+        ConnectivityManager connec =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        // Check for network connections
+        if (connec.getNetworkInfo(0).getState() == android.net.NetworkInfo.State.CONNECTED ||
+                connec.getNetworkInfo(0).getState() == android.net.NetworkInfo.State.CONNECTING ||
+                connec.getNetworkInfo(1).getState() == android.net.NetworkInfo.State.CONNECTING ||
+                connec.getNetworkInfo(1).getState() == android.net.NetworkInfo.State.CONNECTED) {
+
+
+            return true;
+
+        } else if (
+                connec.getNetworkInfo(0).getState() == android.net.NetworkInfo.State.DISCONNECTED ||
+                        connec.getNetworkInfo(1).getState() == android.net.NetworkInfo.State.DISCONNECTED) {
+
+
+            return false;
+        }
+        return false;
     }
 
 

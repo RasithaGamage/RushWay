@@ -97,6 +97,7 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
     private DatabaseReference mDatabase;
     private LocationRequest mLocationRequest;
 
+
     private long UPDATE_INTERVAL = 10 * 1000;  /* 10 secs */
     private long FASTEST_INTERVAL = 2000; /* 2 sec */
 
@@ -150,8 +151,8 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
         mGps = (ImageView) findViewById(R.id.ic_gps) ;
         mInfo= (ImageView) findViewById(R.id.place_info);
 
-        FirebaseApp.initializeApp(this);
         mDatabase= FirebaseDatabase.getInstance().getReference();
+
         getLocationPermission();
         FirebaseApp.initializeApp(this);
 

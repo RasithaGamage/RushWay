@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.firebase.FirebaseApp;
 
 import java.sql.Connection;
 
@@ -36,6 +37,8 @@ public class Home extends AppCompatActivity {
         btnSnap = (Button) findViewById(R.id.btnSnap);
         btnLeaderBoard = (ImageButton) findViewById(R.id.btnLeaderBoard);
         btnSignIn = (Button) findViewById(R.id.btnSignIn);
+
+        FirebaseApp.initializeApp(this);
 
         btnSnap.setOnClickListener(new View.OnClickListener(){
                                                   @Override
