@@ -1,6 +1,7 @@
 package com.example.rasitha.RushWay;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Address;
@@ -62,6 +63,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -96,6 +98,7 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
     private Location mCurrentLocation;
     private DatabaseReference mDatabase;
     private LocationRequest mLocationRequest;
+    private FirebaseAuth mAuth;
 
 
     private long UPDATE_INTERVAL = 10 * 1000;  /* 10 secs */
@@ -152,6 +155,7 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
         mInfo= (ImageView) findViewById(R.id.place_info);
 
         mDatabase= FirebaseDatabase.getInstance().getReference();
+        mAuth = FirebaseAuth.getInstance();
 
         getLocationPermission();
         FirebaseApp.initializeApp(this);
@@ -492,6 +496,21 @@ private void hideSoftKeyboard() {
         return url;
     }
 
+    @Override
+    public void onBackPressed() {
+        if(mAuth.getCurrentUser() == null ){
+            Intent newActivityLoad = new Intent(MapActivityNew.this,Home.class);
+            startActivity(newActivityLoad);
+        }
+        else {
+            Intent startMain = new Intent(Intent.ACTION_MAIN);
+            startMain.addCategory(Intent.CATEGORY_HOME);
+            startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(startMain);
+        }
 
+        //Sign out
+        //FirebaseAuth.getInstance().signOut();
+    }
 
 }

@@ -116,7 +116,6 @@ private void createAccount(final User user_obj){
 //                                                Toast.LENGTH_SHORT).show();
                                         String s  = task.getException().toString();
                                         errorText.setText(s.substring(s.indexOf("[")+1,s.indexOf("]")-1));
-
                                     }
                                 }
                             });

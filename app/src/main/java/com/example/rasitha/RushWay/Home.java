@@ -2,30 +2,35 @@ package com.example.rasitha.RushWay;
 
 import android.app.Dialog;
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
-
-import java.sql.Connection;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class Home extends AppCompatActivity {
 
-    Button btnSnap ;
+    Button btnLogin;
     ImageButton btnLeaderBoard;
     Button btnSignIn;
+    EditText editTextEmail,editTextPw;
 
     private static final String TAG = "Home";
     private static final int ERROR_DIALOG_REQUEST =9001;
-
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -34,17 +39,19 @@ public class Home extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
-        btnSnap = (Button) findViewById(R.id.btnSnap);
+        btnLogin = (Button) findViewById(R.id.btnSnap);
         btnLeaderBoard = (ImageButton) findViewById(R.id.btnLeaderBoard);
         btnSignIn = (Button) findViewById(R.id.btnSignIn);
+        editTextEmail = (EditText) findViewById(R.id.uidEditText);
+        editTextPw = (EditText) findViewById(R.id.pwdEditText);
 
         FirebaseApp.initializeApp(this);
+        mAuth = FirebaseAuth.getInstance();
 
-        btnSnap.setOnClickListener(new View.OnClickListener(){
+        btnLogin.setOnClickListener(new View.OnClickListener(){
                                                   @Override
                                                   public void onClick(View v){
-                                                      Intent newActivityLoad = new Intent(Home.this,MapActivityNew.class);
-                                                      startActivity(newActivityLoad);
+                                                        checkLogin();
                                                   }
                                               }
     );
@@ -96,6 +103,50 @@ public class Home extends AppCompatActivity {
         return false;
     }
 
+    private void checkLogin() {
+
+        mAuth.signInWithEmailAndPassword(editTextEmail.getText().toString(), editTextPw.getText().toString())
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            // Sign in success, update UI with the signed-in user's information
+                            Log.d(TAG, "signInWithEmail:success");
+                            FirebaseUser user = mAuth.getCurrentUser();
+
+                            Intent newActivityLoad = new Intent(Home.this,MapActivityNew.class);
+                            startActivity(newActivityLoad);
+
+                        } else {
+                            // If sign in fails, display a message to the user.
+                            Log.w(TAG, "signInWithEmail:failure", task.getException());
+                            Toast.makeText(Home.this, "Authentication failed.",
+                                    Toast.LENGTH_SHORT).show();
+
+                        }
+
+                    }
+                });
+
+
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        // Check if user is signed in (non-null) and update UI accordingly.
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if(currentUser != null){
+            Intent newActivityLoad = new Intent(Home.this,MapActivityNew.class);
+            startActivity(newActivityLoad);
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+
+
+    }
 
 
 }
