@@ -8,6 +8,7 @@ public class User {
     private String phone;
     private String nic;
     private String pw;
+    private String uid;
     private RWLocation currentLocation;
 
     public User(String fName, String lName, String eMail, String phone, String nic) {
@@ -61,7 +62,6 @@ public class User {
     public RWLocation getCurrentLocation() {
         return currentLocation;
     }
-
     public void setCurrentLocation(RWLocation currentLocation) {
         this.currentLocation = currentLocation;
     }
@@ -69,8 +69,14 @@ public class User {
     public String getPw() {
         return pw;
     }
-
     public void setPw(String pw) {
         this.pw = pw;
+    }
+
+    public String getUid() {
+        return uid;
+    }
+    public void setUid(String uid) {
+        this.uid = uid;
     }
 }

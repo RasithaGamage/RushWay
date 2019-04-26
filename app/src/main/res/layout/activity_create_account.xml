@@ -223,6 +223,12 @@
                 android:layout_marginBottom="10dp"
                 android:textColor="#3e7cb6"
                 android:id="@+id/submitButton"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#A52626"
+                android:id="@+id/errorText"
+                android:textAlignment="center"/>
 
 
         </LinearLayout>
