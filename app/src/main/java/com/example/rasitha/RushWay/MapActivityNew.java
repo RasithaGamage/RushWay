@@ -1,22 +1,29 @@
 package com.example.rasitha.RushWay;
 
 import android.Manifest;
+import android.app.ActionBar;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.Looper;
 import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Html;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
@@ -100,6 +107,10 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
     private LocationRequest mLocationRequest;
     private FirebaseAuth mAuth;
 
+    private DrawerLayout dl;
+    private ActionBarDrawerToggle t;
+    private NavigationView nv;
+
 
     private long UPDATE_INTERVAL = 10 * 1000;  /* 10 secs */
     private long FASTEST_INTERVAL = 2000; /* 2 sec */
@@ -137,9 +148,54 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map_new);
-        getSupportActionBar().hide();
+        // getSupportActionBar().hide();
+
+        dl = (DrawerLayout)findViewById(R.id.activity_main);
+        t = new ActionBarDrawerToggle(this, dl,R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        dl.addDrawerListener(t);
+        t.syncState();
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setTitle("");
+
+        nv = (NavigationView)findViewById(R.id.nv);
+        nv.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                int id = item.getItemId();
+                switch(id)
+                {
+                    case R.id.account:
+                        Toast.makeText(MapActivityNew.this, "My Account",Toast.LENGTH_SHORT).show();break;
+                    case R.id.settings:
+                        Toast.makeText(MapActivityNew.this, "Settings",Toast.LENGTH_SHORT).show();break;
+                    case R.id.mycart:
+                        Toast.makeText(MapActivityNew.this, "My Cart",Toast.LENGTH_SHORT).show();break;
+                    case R.id.logout:
+                    {
+                        Toast.makeText(MapActivityNew.this, "Logged out",Toast.LENGTH_SHORT).show();
+                        //Sign out
+                         FirebaseAuth.getInstance().signOut();
+
+                        Intent newActivityLoad = new Intent(MapActivityNew.this,Home.class);
+                        startActivity(newActivityLoad);
+                         break;
+
+                    }
+                    default:
+                        return true;
+                }
+
+
+                return true;
+
+            }
+        });
+
 
         mSpinner = (Spinner) findViewById(R.id.spinner1);
         List<String> list = new ArrayList<String>();
@@ -198,6 +254,15 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
             mCurrentPolyline.remove();
         }
         mCurrentPolyline = mMap.addPolyline((PolylineOptions) values[0]);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        if(t.onOptionsItemSelected(item))
+            return true;
+
+        return super.onOptionsItemSelected(item);
     }
 
     private void geolocate() {
@@ -509,8 +574,7 @@ private void hideSoftKeyboard() {
             startActivity(startMain);
         }
 
-        //Sign out
-        //FirebaseAuth.getInstance().signOut();
+
     }
 
 }

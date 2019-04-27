@@ -51,7 +51,17 @@ public class Home extends AppCompatActivity {
         btnLogin.setOnClickListener(new View.OnClickListener(){
                                                   @Override
                                                   public void onClick(View v){
-                                                        checkLogin();
+
+
+
+                              if( !editTextEmail.getText().toString().isEmpty() && !editTextPw.getText().toString().isEmpty() ){
+                                  checkLogin();
+                              }
+                              else {
+                                  Toast.makeText(Home.this,"Please enter email and password",Toast.LENGTH_SHORT).show();
+                              }
+
+
                                                   }
                                               }
     );
@@ -105,29 +115,27 @@ public class Home extends AppCompatActivity {
 
     private void checkLogin() {
 
-        mAuth.signInWithEmailAndPassword(editTextEmail.getText().toString(), editTextPw.getText().toString())
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-                            Log.d(TAG, "signInWithEmail:success");
-                            FirebaseUser user = mAuth.getCurrentUser();
 
-                            Intent newActivityLoad = new Intent(Home.this,MapActivityNew.class);
-                            startActivity(newActivityLoad);
+            mAuth.signInWithEmailAndPassword(editTextEmail.getText().toString(), editTextPw.getText().toString())
+                    .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                        @Override
+                        public void onComplete(@NonNull Task<AuthResult> task) {
+                            if (task.isSuccessful()) {
+                                // Sign in success, update UI with the signed-in user's information
+                                Log.d(TAG, "signInWithEmail:success");
+                                FirebaseUser user = mAuth.getCurrentUser();
 
-                        } else {
-                            // If sign in fails, display a message to the user.
-                            Log.w(TAG, "signInWithEmail:failure", task.getException());
-                            Toast.makeText(Home.this, "Authentication failed.",
-                                    Toast.LENGTH_SHORT).show();
+                                Intent newActivityLoad = new Intent(Home.this,MapActivityNew.class);
+                                startActivity(newActivityLoad);
 
+                            } else {
+                                // If sign in fails, display a message to the user.
+                                Log.w(TAG, "signInWithEmail:failure", task.getException());
+                                Toast.makeText(Home.this, "Authentication failed.",
+                                        Toast.LENGTH_SHORT).show();
+                            }
                         }
-
-                    }
-                });
-
+                    });
 
     }
 
