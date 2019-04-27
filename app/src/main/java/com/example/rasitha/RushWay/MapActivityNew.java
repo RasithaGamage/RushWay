@@ -38,6 +38,7 @@ import android.widget.Toast;
 import com.example.rasitha.RushWay.directionHelpers.FetchURL;
 import com.example.rasitha.RushWay.directionHelpers.TaskLoadedCallback;
 import com.example.rasitha.RushWay.models.PlaceInfo;
+import com.example.rasitha.RushWay.models.RWLocation;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
@@ -239,8 +240,8 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
                         // do work here
                         if (!locationResult.getLastLocation().equals(null))
                         {
-                            mDatabase.child("current_location").child("lat").setValue(locationResult.getLastLocation().getLatitude());
-                            mDatabase.child("current_location").child("lng").setValue(locationResult.getLastLocation().getLongitude());
+                            RWLocation loc = new RWLocation(locationResult.getLastLocation().getLatitude(),locationResult.getLastLocation().getLongitude());
+                            mDatabase.child("Users").child("User:"+mAuth.getCurrentUser().getUid()).child("currentLocation").setValue(loc);
                         }
                     }
                 },

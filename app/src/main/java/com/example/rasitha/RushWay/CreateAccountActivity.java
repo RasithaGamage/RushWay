@@ -61,7 +61,7 @@ private static final String TAG = "CreateAccountActivity";
             @Override
             public void onClick(View view) {
                 User user_obj = new User(fName.getText().toString(),lName.getText().toString(),
-                        phone.getText().toString(),email.getText().toString(),nic.getText().toString());
+                        email.getText().toString(),phone.getText().toString(),nic.getText().toString());
 
                 user_obj.setPw(pw2.getText().toString());
                 createAccount(user_obj);
@@ -106,7 +106,7 @@ private void createAccount(final User user_obj){
 
                                         //users other details should be added to the DB
                                         user_obj.setUid(user.getUid());
-                                        mDatabase.child("User:"+user.getUid()).setValue(user_obj);
+                                        mDatabase.child("Users").child("User:"+user.getUid()).setValue(user_obj);
                                         
                                         // updateUI(user);
                                     } else {
