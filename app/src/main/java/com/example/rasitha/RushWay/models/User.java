@@ -1,7 +1,9 @@
 package com.example.rasitha.RushWay.models;
 
 
-public class User {
+import java.io.Serializable;
+
+public class User  implements Serializable {
     private String fName;
     private String lName;
     private String eMail;
@@ -10,7 +12,7 @@ public class User {
     private String pw;
     private String uid;
     private RWLocation currentLocation;
-
+    public User(){}
     public User(String fName, String lName, String eMail, String phone, String nic) {
         this.fName = fName;
         this.lName = lName;

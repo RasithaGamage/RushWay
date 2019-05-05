@@ -238,7 +238,7 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
                     @Override
                     public void onLocationResult(LocationResult locationResult) {
                         // do work here
-                        if (!locationResult.getLastLocation().equals(null))
+                        if (locationResult.getLastLocation()!=null && mAuth.getCurrentUser()!= null)
                         {
                             RWLocation loc = new RWLocation(locationResult.getLastLocation().getLatitude(),locationResult.getLastLocation().getLongitude());
                             mDatabase.child("Users").child("User:"+mAuth.getCurrentUser().getUid()).child("currentLocation").setValue(loc);

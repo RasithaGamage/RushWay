@@ -1,6 +1,7 @@
 package com.example.rasitha.RushWay;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.os.Build;
 import android.support.annotation.NonNull;
@@ -14,6 +15,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.rasitha.RushWay.models.Driver;
 import com.example.rasitha.RushWay.models.User;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -29,7 +31,7 @@ public class CreateAccountActivity extends AppCompatActivity {
 private EditText fName,lName,phone,email,nic,pw1,pw2;
 private Button submitButton;
 private TextView errorText;
-
+private User user_obj;
 private FirebaseAuth mAuth;
 
 private static final String TAG = "CreateAccountActivity";
@@ -60,65 +62,58 @@ private static final String TAG = "CreateAccountActivity";
         submitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                User user_obj = new User(fName.getText().toString(),lName.getText().toString(),
+                user_obj = new User(fName.getText().toString(),lName.getText().toString(),
                         email.getText().toString(),phone.getText().toString(),nic.getText().toString());
 
                 user_obj.setPw(pw2.getText().toString());
-                createAccount(user_obj);
+                createAccount();
 
             }
         });
     }
 
 
-private void createAccount(final User user_obj){
+private void createAccount(){
 
     if(pw2.getText().toString().equals(pw1.getText().toString())){
 
     }
     else
     {
-        Toast.makeText(CreateAccountActivity.this,"Passwords not matching",Toast.LENGTH_SHORT);
+        Toast.makeText(CreateAccountActivity.this,"Passwords not matching",Toast.LENGTH_SHORT).show();
     }
 
-    Toast.makeText(CreateAccountActivity.this, email.getText().toString()+" PW: "+pw1.getText().toString(),
-            Toast.LENGTH_SHORT).show();
+    Intent newActivityLoad = new Intent(CreateAccountActivity.this,CreateAccount2.class);
+    newActivityLoad.putExtra("MY_USER_OBJ",user_obj );
+    startActivity(newActivityLoad);
 
-    if (mAuth != null)  {
-
-        Toast.makeText(CreateAccountActivity.this, "Not null",
-                Toast.LENGTH_SHORT).show();
-    }
-    if (mAuth == null)
-    {
-        Toast.makeText(CreateAccountActivity.this, "null",
-                Toast.LENGTH_SHORT).show();
-    }
-
-                    mAuth.createUserWithEmailAndPassword(email.getText().toString(), pw1.getText().toString())
-                            .addOnCompleteListener(CreateAccountActivity.this, new OnCompleteListener<AuthResult>() {
-                                @Override
-                                public void onComplete(@NonNull Task<AuthResult> task) {
-                                    if (task.isSuccessful()) {
-                                        // Sign in success, update UI with the signed-in user's information
-                                        Log.d(TAG, "createUserWithEmail:success");
-                                        FirebaseUser user = mAuth.getCurrentUser();
-
-                                        //users other details should be added to the DB
-                                        user_obj.setUid(user.getUid());
-                                        mDatabase.child("Users").child("User:"+user.getUid()).setValue(user_obj);
-                                        
-                                        // updateUI(user);
-                                    } else {
-                                        // If sign in fails, display a message to the user.
-                                        Log.w(TAG, "createUserWithEmail:failure", task.getException());
-//                                        Toast.makeText(CreateAccountActivity.this, "Authentication failed.",
-//                                                Toast.LENGTH_SHORT).show();
-                                        String s  = task.getException().toString();
-                                        errorText.setText(s.substring(s.indexOf("[")+1,s.indexOf("]")-1));
-                                    }
-                                }
-                            });
+//        mAuth.createUserWithEmailAndPassword(email.getText().toString(), pw1.getText().toString())
+//                .addOnCompleteListener(CreateAccountActivity.this, new OnCompleteListener<AuthResult>() {
+//                    @Override
+//                    public void onComplete(@NonNull Task<AuthResult> task) {
+//                        if (task.isSuccessful()) {
+//                            // Sign in success, update UI with the signed-in user's information
+//                            Log.d(TAG, "createUserWithEmail:success");
+//                            FirebaseUser user = mAuth.getCurrentUser();
+//
+//                            //users other details should be added to the DB
+//                            user_obj.setUid(user.getUid());
+//                            mDatabase.child("Users").child("User:"+user.getUid()).setValue(user_obj);
+//
+//                            Intent newActivityLoad = new Intent(CreateAccountActivity.this,CreateAccount2.class);
+//                            newActivityLoad.putExtra("MY_USER_OBJ",user_obj );
+//                            startActivity(newActivityLoad);
+//
+//                        } else {
+//                            // If sign in fails, display a message to the user.
+//                            Log.w(TAG, "createUserWithEmail:failure", task.getException());
+////                                        Toast.makeText(CreateAccountActivity.this, "Authentication failed.",
+////                                                Toast.LENGTH_SHORT).show();
+//                            String s  = task.getException().toString();
+//                            errorText.setText(s.substring(s.indexOf("[")+1,s.indexOf("]")-1));
+//                        }
+//                    }
+//                });
 
 }
 
