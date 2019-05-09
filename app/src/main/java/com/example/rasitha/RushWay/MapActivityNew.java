@@ -1,6 +1,7 @@
 package com.example.rasitha.RushWay;
 
 import android.Manifest;
+import android.animation.ValueAnimator;
 import android.app.ActionBar;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -9,6 +10,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
+import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -26,6 +28,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.animation.LinearInterpolator;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -54,6 +57,8 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.SettingsClient;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.RuntimeRemoteException;
@@ -124,6 +129,13 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
     private ActionBarDrawerToggle t;
     private NavigationView nv;
 
+    private Handler handler;
+    private float v;
+    private static Marker marker;
+    private static LatLng startPosition, endPosition;
+    private double  lng , lat ;
+
+
 
     private long UPDATE_INTERVAL = 10 * 1000;  /* 10 secs */
     private long FASTEST_INTERVAL = 2000; /* 2 sec */
@@ -156,6 +168,17 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
            // mMap.getUiSettings()
 
             init();
+
+            startPosition = new LatLng(6.841749, 79.964201);
+            endPosition = new LatLng(6.841749, 79.964201);
+            handler = new Handler();
+            marker = mMap.addMarker(new MarkerOptions().position(new LatLng(6.841749, 79.964201))
+                    .flat(true)
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_car)));
+
+            startLocationUpdates();
+            updateBusLocations();
+            getNearbyBuses();
         }
     }
 
@@ -264,9 +287,8 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
 
         }
 
-        startLocationUpdates();
-        updateBusLocations();
-        getNearbyBuses();
+
+
     }
 
     private void startLocationUpdates() {
@@ -664,9 +686,9 @@ private void hideSoftKeyboard() {
     }
 
 
-    private List<Driver> getNearbyBuses(){
+    private List<Driver> getNearbyBuses() {
 
-        final List<Driver> nearbyDrivers =  new ArrayList<>();
+        final List<Driver> nearbyDrivers = new ArrayList<>();
 
         final DatabaseReference userRef = FirebaseDatabase.getInstance().getReference().child("Users/Drivers");
 
@@ -674,45 +696,68 @@ private void hideSoftKeyboard() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                for(DataSnapshot driver : dataSnapshot.getChildren() ){
+                for (DataSnapshot driver : dataSnapshot.getChildren()) {
 
                     //check distance between each driver and my current location
-                        double lat = Double.parseDouble(driver.child("currentLocation").child("lat").getValue().toString());
-                        double lon = Double.parseDouble(driver.child("currentLocation").child("lon").getValue().toString());
-                        LatLng Driverlatlng = new LatLng(lat,lon);
-                        LatLng mylatlng = new LatLng(mCurrentLocation.getLatitude(),mCurrentLocation.getLongitude());
-                        double dist = getStraightLineDistance(mylatlng,Driverlatlng);
+                    double lat = Double.parseDouble(driver.child("currentLocation").child("lat").getValue().toString());
+                    double lon = Double.parseDouble(driver.child("currentLocation").child("lon").getValue().toString());
+                    LatLng Driverlatlng = new LatLng(lat, lon);
+                    LatLng mylatlng = new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
+                    double dist = getStraightLineDistance(mylatlng, Driverlatlng);
 
-                        if (dist<200){
-                           nearbyDrivers.add(driver.getValue(Driver.class));
-                        }
+                    if (dist < 200) {
+                        nearbyDrivers.add(driver.getValue(Driver.class));
+                    }
                 }
 
-                for(Driver driver: nearbyDrivers ){
-                    Log.d(TAG,"Driver nearby  : "+driver.getfName());
-                    LatLng ll = new LatLng(driver.getCurrentLocation().getLat(),driver.getCurrentLocation().getLon());
+                for (Driver driver : nearbyDrivers) {
+                    Log.d(TAG, "Driver nearby  : " + driver.getfName());
+                    LatLng ll = new LatLng(driver.getCurrentLocation().getLat(), driver.getCurrentLocation().getLon());
 
-                    MarkerOptions options = new MarkerOptions()
-                            .position(ll);
+//                    MarkerOptions options = new MarkerOptions()
+//                            .position(ll);
+//
+//                    mMap.addMarker(options);
 
-                    mMap.addMarker(options);
-
-
+                    startPosition = endPosition;
+                    endPosition = ll;
                 }
+
+                ValueAnimator valueAnimator = ValueAnimator.ofFloat(0, 1);
+                valueAnimator.setDuration(3000);
+                valueAnimator.setInterpolator(new LinearInterpolator());
+                valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                    @Override
+                    public void onAnimationUpdate(ValueAnimator valueAnimator) {
+
+                        v = valueAnimator.getAnimatedFraction();
+                        lng = v * endPosition.longitude + (1 - v)* startPosition.longitude;
+                        lat = v * endPosition.latitude + (1 - v)* startPosition.latitude;
+                        LatLng newPos = new LatLng(lat, lng);
+
+                        marker.setPosition(newPos);
+                        marker.setAnchor(0.5f, 0.5f);
+                        marker.setRotation(getBearing(startPosition, newPos));
+                        mMap.animateCamera(CameraUpdateFactory
+                                .newCameraPosition(new CameraPosition.Builder().target(newPos).zoom(15.5f).build()));
+
+                        Log.d(TAG, "onAnimationUpdate is running");
+
+                    }
+                });
+                valueAnimator.start();
             }
+
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                Log.d(TAG,"databaseError : "+databaseError.getMessage());
+                Log.d(TAG, "databaseError : " + databaseError.getMessage());
             }
         });
 
         return nearbyDrivers;
     }
 
-
-
     private void updateBusLocations(){
-
 
         final DatabaseReference userRef = FirebaseDatabase.getInstance().getReference().child("Users/Drivers/mXJBjL8F9IMSTIoavHbd9ZvcOhj1");
 
@@ -742,8 +787,33 @@ private void hideSoftKeyboard() {
 
             }
         });
-    }
 
+
+
+//            handler.postDelayed(new Runnable() {
+//                @Override
+//                public void run() {
+//
+//
+//
+//                }
+//            }, 3000);
+        }
+
+        private float getBearing(LatLng begin, LatLng end) {
+            double lat = Math.abs(begin.latitude - end.latitude);
+            double lng = Math.abs(begin.longitude - end.longitude);
+
+            if (begin.latitude < end.latitude && begin.longitude < end.longitude)
+                return (float) (Math.toDegrees(Math.atan(lng / lat)));
+            else if (begin.latitude >= end.latitude && begin.longitude < end.longitude)
+                return (float) ((90 - Math.toDegrees(Math.atan(lng / lat))) + 90);
+            else if (begin.latitude >= end.latitude && begin.longitude >= end.longitude)
+                return (float) (Math.toDegrees(Math.atan(lng / lat)) + 180);
+            else if (begin.latitude < end.latitude && begin.longitude >= end.longitude)
+                return (float) ((90 - Math.toDegrees(Math.atan(lng / lat))) + 270);
+            return -1;
+        }
 
 }
 
