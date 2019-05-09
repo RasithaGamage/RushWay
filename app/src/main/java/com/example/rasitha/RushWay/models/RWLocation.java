@@ -4,6 +4,8 @@ public class RWLocation {
 
     private double lat;
     private double lon;
+    public RWLocation() {
+    }
 
     public RWLocation(double lat, double lon) {
         this.lat = lat;

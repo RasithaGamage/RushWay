@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:fillViewport="false">
+
+    <LinearLayout android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="40dp"
+            android:layout_weight="1"
+            android:layout_marginTop="60pt"
+            android:id="@+id/layout1">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="30pt"
+                android:src="@drawable/fixsnaplogo"
+                android:id="@+id/imageView"
+                android:layout_marginTop="10pt"/>
+            <TextView
+                android:text="Makes travel easy!"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/textView2"
+                android:textAlignment="center"
+                android:layout_below="@id/imageView"
+                android:layout_marginTop="-5pt"
+                android:textSize="7pt"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Successfully Signed in !"
+                    android:textColor="#6CA848"
+                    android:textSize="13pt"
+                    android:textAlignment="center"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="70dp"/>
+
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="50dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/button_layout"
+                    android:text="Login"
+                    android:layout_marginBottom="10dp"
+                    android:textColor="#3e7cb6"
+                    android:id="@+id/submitButton"/>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="#A52626"
+                    android:id="@+id/errorText2"
+                    android:textAlignment="center"/>
+
+
+            </LinearLayout>
+
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+
+</ScrollView>

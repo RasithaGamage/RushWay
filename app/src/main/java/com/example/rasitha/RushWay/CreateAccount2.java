@@ -42,7 +42,7 @@ public class CreateAccount2 extends AppCompatActivity {
         ref = mDatabase.getReference();
 
         mAuth =  FirebaseAuth.getInstance();
-        FirebaseUser user = mAuth.getCurrentUser();
+        final FirebaseUser user = mAuth.getCurrentUser();
         b = (Button) findViewById(R.id.submitButton);
 
         b.setOnClickListener(new View.OnClickListener() {
@@ -65,19 +65,28 @@ public class CreateAccount2 extends AppCompatActivity {
                 if(spinner.getSelectedItem().toString().equals("Bus Driver")){
                     User x = (User) getIntent().getSerializableExtra("MY_USER_OBJ");
                     Driver newDriver = new Driver(x.getfName(),x.getlName(),x.geteMail(),x.getPhone(),x.getNic());
-                    moveToNextActivity(newDriver);
+                    newDriver.setUid(x.getUid());
+                    newDriver.setPw(x.getPw());
+                    newDriver.setCurrentLocation(x.getCurrentLocation());
+                    moveToNextActivity(newDriver,CreateAccountDriver.class);
                 }
 //user chose Owner
                 else if(spinner.getSelectedItem().toString().equals("Bus Owner")){
                     User x = (User) getIntent().getSerializableExtra("MY_USER_OBJ");
                     Owner newOwner = new Owner(x.getfName(),x.getlName(),x.geteMail(),x.getPhone(),x.getNic());
-                    moveToNextActivity(newOwner);
+                    newOwner.setUid(x.getUid());
+                    newOwner.setPw(x.getPw());
+                    newOwner.setCurrentLocation(x.getCurrentLocation());
+                    moveToNextActivity(newOwner,CreateAccountDriver.class);
                 }
 //user chose Passenger
                 else if(spinner.getSelectedItem().toString().equals("Passenger")){
                     User x = (User) getIntent().getSerializableExtra("MY_USER_OBJ");
                     Passenger newPassenger = new Passenger(x.getfName(),x.getlName(),x.geteMail(),x.getPhone(),x.getNic());
-                    moveToNextActivity(newPassenger);
+                    newPassenger.setUid(x.getUid());
+                    newPassenger.setPw(x.getPw());
+                    newPassenger.setCurrentLocation(x.getCurrentLocation());
+                    moveToNextActivity(newPassenger,SigninSuccess.class);
                 }
 //ref.child("Users").child("User:"+user.getUid()).child("").setValue("");
                 else if(spinner.getSelectedItem().toString().isEmpty()){
@@ -89,9 +98,9 @@ public class CreateAccount2 extends AppCompatActivity {
         });
     }
 
-private void moveToNextActivity(User obj){
+private void moveToNextActivity(User obj, Class nextActivity){
 
-    Intent newActivityLoad = new Intent(CreateAccount2.this, CreateAccountDriver.class);
+    Intent newActivityLoad = new Intent(CreateAccount2.this, nextActivity);
     newActivityLoad.putExtra("MY_USER_OBJ",obj );
     startActivity(newActivityLoad);
 

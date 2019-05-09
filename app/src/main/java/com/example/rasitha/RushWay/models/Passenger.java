@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 public class Passenger extends User   implements Serializable {
 
-    final public String userType = "passanger";
+    final public String userType = "passenger";
     public Passenger(){
 
     }

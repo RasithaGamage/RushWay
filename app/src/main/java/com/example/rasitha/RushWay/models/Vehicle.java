@@ -3,6 +3,25 @@ package com.example.rasitha.RushWay.models;
 public class Vehicle {
 
     private String numberPlate;
+    private String route;
+
+    public String getRoute() {
+        return route;
+    }
+
+    public void setRoute(String route) {
+        this.route = route;
+    }
+
+    public String getRouteNo() {
+        return routeNo;
+    }
+
+    public void setRouteNo(String routeNo) {
+        this.routeNo = routeNo;
+    }
+
+    private String routeNo;
 
     public String getNumberPlate() {
         return numberPlate;

@@ -83,38 +83,35 @@ private void createAccount(){
         Toast.makeText(CreateAccountActivity.this,"Passwords not matching",Toast.LENGTH_SHORT).show();
     }
 
-    Intent newActivityLoad = new Intent(CreateAccountActivity.this,CreateAccount2.class);
-    newActivityLoad.putExtra("MY_USER_OBJ",user_obj );
-    startActivity(newActivityLoad);
+        mAuth.createUserWithEmailAndPassword(email.getText().toString(), pw1.getText().toString())
+                .addOnCompleteListener(CreateAccountActivity.this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            // Sign in success, update UI with the signed-in user's information
+                            Log.d(TAG, "createUserWithEmail:success");
 
-//        mAuth.createUserWithEmailAndPassword(email.getText().toString(), pw1.getText().toString())
-//                .addOnCompleteListener(CreateAccountActivity.this, new OnCompleteListener<AuthResult>() {
-//                    @Override
-//                    public void onComplete(@NonNull Task<AuthResult> task) {
-//                        if (task.isSuccessful()) {
-//                            // Sign in success, update UI with the signed-in user's information
-//                            Log.d(TAG, "createUserWithEmail:success");
-//                            FirebaseUser user = mAuth.getCurrentUser();
-//
-//                            //users other details should be added to the DB
-//                            user_obj.setUid(user.getUid());
-//                            mDatabase.child("Users").child("User:"+user.getUid()).setValue(user_obj);
-//
-//                            Intent newActivityLoad = new Intent(CreateAccountActivity.this,CreateAccount2.class);
-//                            newActivityLoad.putExtra("MY_USER_OBJ",user_obj );
-//                            startActivity(newActivityLoad);
-//
-//                        } else {
-//                            // If sign in fails, display a message to the user.
-//                            Log.w(TAG, "createUserWithEmail:failure", task.getException());
-////                                        Toast.makeText(CreateAccountActivity.this, "Authentication failed.",
-////                                                Toast.LENGTH_SHORT).show();
-//                            String s  = task.getException().toString();
-//                            errorText.setText(s.substring(s.indexOf("[")+1,s.indexOf("]")-1));
-//                        }
-//                    }
-//                });
+                            FirebaseUser user = mAuth.getCurrentUser();
 
+                            while(user.getUid()== null){
+
+                            }
+
+                            Intent newActivityLoad = new Intent(CreateAccountActivity.this,CreateAccount2.class);
+                            newActivityLoad.putExtra("MY_USER_OBJ",user_obj );
+                            startActivity(newActivityLoad);
+
+
+                        } else {
+                            // If sign in fails, display a message to the user.
+                            Log.w(TAG, "createUserWithEmail:failure", task.getException());
+//                                        Toast.makeText(CreateAccountActivity.this, "Authentication failed.",
+//                                                Toast.LENGTH_SHORT).show();
+                            String s  = task.getException().toString();
+                            errorText.setText(s.substring(s.indexOf("[")+1,s.indexOf("]")-1));
+                        }
+                    }
+                });
 }
 
 //    public boolean isInternetOn() {

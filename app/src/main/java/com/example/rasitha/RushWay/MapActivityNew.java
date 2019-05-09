@@ -11,6 +11,7 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.os.Looper;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -32,11 +33,13 @@ import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.rasitha.RushWay.directionHelpers.FetchURL;
 import com.example.rasitha.RushWay.directionHelpers.TaskLoadedCallback;
+import com.example.rasitha.RushWay.models.Driver;
 import com.example.rasitha.RushWay.models.PlaceInfo;
 import com.example.rasitha.RushWay.models.RWLocation;
 import com.google.android.gms.common.ConnectionResult;
@@ -72,12 +75,19 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static com.google.android.gms.location.LocationServices.getFusedLocationProviderClient;
 
@@ -107,6 +117,8 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
     private DatabaseReference mDatabase;
     private LocationRequest mLocationRequest;
     private FirebaseAuth mAuth;
+    private static String userType;
+    private static FirebaseUser fUser;
 
     private DrawerLayout dl;
     private ActionBarDrawerToggle t;
@@ -149,7 +161,6 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map_new);
@@ -217,8 +228,45 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
         getLocationPermission();
         FirebaseApp.initializeApp(this);
 
-        startLocationUpdates();
+        fUser = mAuth.getCurrentUser();
 
+        userType = null;
+
+        if(mAuth.getCurrentUser()!= null) {
+
+            Log.d(TAG,"UID: "+fUser.getUid());
+            String nodePaths[] =  {"Users/Owners","Users/Drivers","Users/Passengers"};
+
+                if(userType == null){
+                    for(String path: nodePaths){
+                    final DatabaseReference userRef1 = FirebaseDatabase.getInstance().getReference().child(path);
+                    Query queryRef = userRef1.orderByChild("uid").equalTo(fUser.getUid());
+                    queryRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                            for(DataSnapshot userResult : dataSnapshot.getChildren() ){
+                                if(userResult.child("uid").getValue().equals(fUser.getUid())){
+                                    userType = (String) userResult.child("userType").getValue();
+                                    Log.d(TAG,"userType 1 : "+userType);
+
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                            Log.d(TAG,"databaseError : "+databaseError.getMessage());
+                        }
+                    });
+                }
+            }
+
+        }
+
+        startLocationUpdates();
+        updateBusLocations();
+        getNearbyBuses();
     }
 
     private void startLocationUpdates() {
@@ -238,10 +286,28 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
                     @Override
                     public void onLocationResult(LocationResult locationResult) {
                         // do work here
-                        if (locationResult.getLastLocation()!=null && mAuth.getCurrentUser()!= null)
+
+                        if (locationResult.getLastLocation()!=null && mAuth.getCurrentUser()!= null && userType!= null)
                         {
                             RWLocation loc = new RWLocation(locationResult.getLastLocation().getLatitude(),locationResult.getLastLocation().getLongitude());
-                            mDatabase.child("Users").child("User:"+mAuth.getCurrentUser().getUid()).child("currentLocation").setValue(loc);
+                            Log.d(TAG,"userType 2: "+userType);
+                            switch (userType){
+                                case "driver":
+                                {
+                                    mDatabase.child("Users").child("Drivers").child(mAuth.getCurrentUser().getUid()).child("currentLocation").setValue(loc);
+                                    break;
+                                }
+                                case "passenger":
+                                {
+                                    mDatabase.child("Users").child("Passengers").child(mAuth.getCurrentUser().getUid()).child("currentLocation").setValue(loc);
+                                    break;
+                                }
+                                case "owner":
+                                {
+                                    mDatabase.child("Users").child("Owners").child(mAuth.getCurrentUser().getUid()).child("currentLocation").setValue(loc);
+                                    break;
+                                }
+                            }
                         }
                     }
                 },
@@ -417,7 +483,7 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
 
     private void moveCamera(LatLng latLng, float zoom,PlaceInfo placeinfo){
         Log.d(TAG,"moveCamer: moving the camera to: lat:"+latLng.latitude+" long:"+latLng.longitude);
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,zoom));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng,zoom));
 
         mMap.clear();
         if(placeinfo !=null){
@@ -456,7 +522,7 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
 
     private void moveCamera(LatLng latLng, float zoom,String title){
         Log.d(TAG,"moveCamer: moving the camera to: lat:"+latLng.latitude+" long:"+latLng.longitude);
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,zoom));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng,zoom));
 
         if(title != "My location"){
 
@@ -575,7 +641,109 @@ private void hideSoftKeyboard() {
             startActivity(startMain);
         }
 
-
     }
 
+    private static final int EARTH_RADIUS = 6371; // Approx Earth radius in KM
+
+    public static double getStraightLineDistance(LatLng latlang1, LatLng latlang2) {
+
+        double dLat  = Math.toRadians((latlang2.latitude - latlang1.latitude));
+        double dLong = Math.toRadians((latlang2.longitude - latlang1.longitude));
+
+        double startLat = Math.toRadians(latlang1.latitude);
+        double endLat   = Math.toRadians(latlang2.latitude);
+
+        double a = haversin(dLat) + Math.cos(startLat) * Math.cos(endLat) * haversin(dLong);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        return EARTH_RADIUS * c; // <-- d
+    }
+
+    public static double haversin(double val) {
+        return Math.pow(Math.sin(val / 2), 2);
+    }
+
+
+    private List<Driver> getNearbyBuses(){
+
+        final List<Driver> nearbyDrivers =  new ArrayList<>();
+
+        final DatabaseReference userRef = FirebaseDatabase.getInstance().getReference().child("Users/Drivers");
+
+        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                for(DataSnapshot driver : dataSnapshot.getChildren() ){
+
+                    //check distance between each driver and my current location
+                        double lat = Double.parseDouble(driver.child("currentLocation").child("lat").getValue().toString());
+                        double lon = Double.parseDouble(driver.child("currentLocation").child("lon").getValue().toString());
+                        LatLng Driverlatlng = new LatLng(lat,lon);
+                        LatLng mylatlng = new LatLng(mCurrentLocation.getLatitude(),mCurrentLocation.getLongitude());
+                        double dist = getStraightLineDistance(mylatlng,Driverlatlng);
+
+                        if (dist<200){
+                           nearbyDrivers.add(driver.getValue(Driver.class));
+                        }
+                }
+
+                for(Driver driver: nearbyDrivers ){
+                    Log.d(TAG,"Driver nearby  : "+driver.getfName());
+                    LatLng ll = new LatLng(driver.getCurrentLocation().getLat(),driver.getCurrentLocation().getLon());
+
+                    MarkerOptions options = new MarkerOptions()
+                            .position(ll);
+
+                    mMap.addMarker(options);
+
+
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Log.d(TAG,"databaseError : "+databaseError.getMessage());
+            }
+        });
+
+        return nearbyDrivers;
+    }
+
+
+
+    private void updateBusLocations(){
+
+
+        final DatabaseReference userRef = FirebaseDatabase.getInstance().getReference().child("Users/Drivers/mXJBjL8F9IMSTIoavHbd9ZvcOhj1");
+
+        userRef.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                getNearbyBuses();
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+
 }
+

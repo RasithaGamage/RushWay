@@ -14,7 +14,8 @@
         android:label="RushWay"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".CreateAccountDriver"></activity>
+        <activity android:name=".SigninSuccess"></activity>
+        <activity android:name=".CreateAccountDriver" />
         <activity android:name=".Home">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
