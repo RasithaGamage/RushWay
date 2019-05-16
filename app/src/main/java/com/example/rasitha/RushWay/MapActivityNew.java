@@ -129,7 +129,7 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
     private ActionBarDrawerToggle t;
     private NavigationView nv;
 
-    private Handler handler;
+    private static Handler handler;
 
 
 
@@ -202,7 +202,7 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
                         Toast.makeText(MapActivityNew.this, "Logged out",Toast.LENGTH_SHORT).show();
                         //Sign out
                          FirebaseAuth.getInstance().signOut();
-
+                         userType= null;
                         Intent newActivityLoad = new Intent(MapActivityNew.this,Home.class);
                         startActivity(newActivityLoad);
                          break;
@@ -277,17 +277,16 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
         startLocationUpdates();
         updateBusLocations();
 
-        handler = new Handler();
+        if(handler == null ){
+            handler = new Handler();
+        }
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-
-
+                Log.d(TAG,"getNearbyBuses() in postDelayed is running");
                 getNearbyBuses();
-
             }
         }, 3000);
-
     }
 
     private void startLocationUpdates() {
@@ -689,16 +688,11 @@ private void hideSoftKeyboard() {
 
                         if(nearbyDrivers.size()>0){
                             for(DriverMarkers driver_marker : nearbyDrivers){
-
                                 uid_this = driver_marker.getD().getUid().trim();
-
                                // Log.d(TAG, "3 driver_marker loop = "+ driver_marker.getD().getUid().trim());
-
                                 if(uid_this.equals(uid_that) ){
                                     driver_exist_in_nearbyDrivers = true;
-
                                    // Log.d(TAG, "uid_this == uid_that");
-
                                     //update existing drivers marker
                                     LatLng startPosition= driver_marker.getM().getPosition();
                                     LatLng endPosition = llX;
@@ -710,11 +704,9 @@ private void hideSoftKeyboard() {
 
                         if(!driver_exist_in_nearbyDrivers){
                             //add driver to nearbyDrivers list
-
                             Marker markerX = mMap.addMarker(new MarkerOptions().position(llX)
                                     .flat(true)
                                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_car)));
-
                             nearbyDrivers.add(new DriverMarkers(markerX,driver.getValue(Driver.class)));
                         }
 
@@ -762,15 +754,6 @@ private void hideSoftKeyboard() {
         });
 
 
-
-//            handler.postDelayed(new Runnable() {
-//                @Override
-//                public void run() {
-//
-//
-//
-//                }
-//            }, 3000);
         }
 
 
