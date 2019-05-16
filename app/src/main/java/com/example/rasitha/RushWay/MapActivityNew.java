@@ -110,7 +110,7 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
     private Spinner mSpinner;
 
 
-    private GoogleMap mMap;
+    private static GoogleMap mMap;
     private Boolean mLocationPermissionGranted = false;
     private FusedLocationProviderClient mFusedLocationProviderClient;
     private PlaceAutocompleteAdapter mPlaceAutocompleteAdapter;
@@ -130,10 +130,7 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
     private NavigationView nv;
 
     private Handler handler;
-    private float v;
-    private static Marker marker;
-    private static LatLng startPosition, endPosition;
-    private double  lng , lat ;
+
 
 
 
@@ -169,16 +166,6 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
 
             init();
 
-            startPosition = new LatLng(6.841749, 79.964201);
-            endPosition = new LatLng(6.841749, 79.964201);
-            handler = new Handler();
-            marker = mMap.addMarker(new MarkerOptions().position(new LatLng(6.841749, 79.964201))
-                    .flat(true)
-                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_car)));
-
-            startLocationUpdates();
-            updateBusLocations();
-            getNearbyBuses();
         }
     }
 
@@ -287,7 +274,19 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
 
         }
 
+        startLocationUpdates();
+        updateBusLocations();
 
+        handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+
+
+                getNearbyBuses();
+
+            }
+        }, 3000);
 
     }
 
@@ -378,14 +377,6 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
 
     private void init(){
         Log.d(TAG,"init: initializing");
-
-//        mGoogleApiClient = new GoogleApiClient
-//                .Builder(this)
-//                .addApi(Places.GEO_DATA_API)
-//                .addApi(Places.PLACE_DETECTION_API)
-//                .enableAutoManage(this, this)
-//                .build();
-
 
         mGoogleApiClient = Places.getGeoDataClient(this,null);
         mSearchText.setOnItemClickListener(mAutoCompleteClickListener);
@@ -665,36 +656,19 @@ private void hideSoftKeyboard() {
 
     }
 
-    private static final int EARTH_RADIUS = 6371; // Approx Earth radius in KM
+    final static List<DriverMarkers> nearbyDrivers = new ArrayList<>();
 
-    public static double getStraightLineDistance(LatLng latlang1, LatLng latlang2) {
-
-        double dLat  = Math.toRadians((latlang2.latitude - latlang1.latitude));
-        double dLong = Math.toRadians((latlang2.longitude - latlang1.longitude));
-
-        double startLat = Math.toRadians(latlang1.latitude);
-        double endLat   = Math.toRadians(latlang2.latitude);
-
-        double a = haversin(dLat) + Math.cos(startLat) * Math.cos(endLat) * haversin(dLong);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-        return EARTH_RADIUS * c; // <-- d
-    }
-
-    public static double haversin(double val) {
-        return Math.pow(Math.sin(val / 2), 2);
-    }
-
-
-    private List<Driver> getNearbyBuses() {
-
-        final List<Driver> nearbyDrivers = new ArrayList<>();
+    private void getNearbyBuses() {
 
         final DatabaseReference userRef = FirebaseDatabase.getInstance().getReference().child("Users/Drivers");
 
         userRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                Log.d(TAG, "1 nearbyDrivers_array_length: "+nearbyDrivers.size());
+                String  uid_that ;
+                String uid_this ;
 
                 for (DataSnapshot driver : dataSnapshot.getChildren()) {
 
@@ -703,49 +677,49 @@ private void hideSoftKeyboard() {
                     double lon = Double.parseDouble(driver.child("currentLocation").child("lon").getValue().toString());
                     LatLng Driverlatlng = new LatLng(lat, lon);
                     LatLng mylatlng = new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
-                    double dist = getStraightLineDistance(mylatlng, Driverlatlng);
+                    double dist = DriverMarkers.getStraightLineDistance(mylatlng, Driverlatlng);
+                    LatLng llX = new LatLng(lat,lon);
 
                     if (dist < 200) {
-                        nearbyDrivers.add(driver.getValue(Driver.class));
+                        //check nearbyDrivers whether this driver exist or not
+                       // Log.d(TAG, "2 nearby driver : "+driver.child("uid").getValue().toString().trim());
+
+                        Boolean driver_exist_in_nearbyDrivers = false;
+                         uid_that = driver.child("uid").getValue().toString().trim();
+
+                        if(nearbyDrivers.size()>0){
+                            for(DriverMarkers driver_marker : nearbyDrivers){
+
+                                uid_this = driver_marker.getD().getUid().trim();
+
+                               // Log.d(TAG, "3 driver_marker loop = "+ driver_marker.getD().getUid().trim());
+
+                                if(uid_this.equals(uid_that) ){
+                                    driver_exist_in_nearbyDrivers = true;
+
+                                   // Log.d(TAG, "uid_this == uid_that");
+
+                                    //update existing drivers marker
+                                    LatLng startPosition= driver_marker.getM().getPosition();
+                                    LatLng endPosition = llX;
+                                    driver_marker.animator(startPosition,endPosition,driver_marker.getM(),mMap);
+                                    break;
+                                }
+                            }
+                        }
+
+                        if(!driver_exist_in_nearbyDrivers){
+                            //add driver to nearbyDrivers list
+
+                            Marker markerX = mMap.addMarker(new MarkerOptions().position(llX)
+                                    .flat(true)
+                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_car)));
+
+                            nearbyDrivers.add(new DriverMarkers(markerX,driver.getValue(Driver.class)));
+                        }
+
                     }
                 }
-
-                for (Driver driver : nearbyDrivers) {
-                    Log.d(TAG, "Driver nearby  : " + driver.getfName());
-                    LatLng ll = new LatLng(driver.getCurrentLocation().getLat(), driver.getCurrentLocation().getLon());
-
-//                    MarkerOptions options = new MarkerOptions()
-//                            .position(ll);
-//
-//                    mMap.addMarker(options);
-
-                    startPosition = endPosition;
-                    endPosition = ll;
-                }
-
-                ValueAnimator valueAnimator = ValueAnimator.ofFloat(0, 1);
-                valueAnimator.setDuration(3000);
-                valueAnimator.setInterpolator(new LinearInterpolator());
-                valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                    @Override
-                    public void onAnimationUpdate(ValueAnimator valueAnimator) {
-
-                        v = valueAnimator.getAnimatedFraction();
-                        lng = v * endPosition.longitude + (1 - v)* startPosition.longitude;
-                        lat = v * endPosition.latitude + (1 - v)* startPosition.latitude;
-                        LatLng newPos = new LatLng(lat, lng);
-
-                        marker.setPosition(newPos);
-                        marker.setAnchor(0.5f, 0.5f);
-                        marker.setRotation(getBearing(startPosition, newPos));
-                        mMap.animateCamera(CameraUpdateFactory
-                                .newCameraPosition(new CameraPosition.Builder().target(newPos).zoom(15.5f).build()));
-
-                        Log.d(TAG, "onAnimationUpdate is running");
-
-                    }
-                });
-                valueAnimator.start();
             }
 
             @Override
@@ -754,12 +728,11 @@ private void hideSoftKeyboard() {
             }
         });
 
-        return nearbyDrivers;
     }
 
     private void updateBusLocations(){
 
-        final DatabaseReference userRef = FirebaseDatabase.getInstance().getReference().child("Users/Drivers/mXJBjL8F9IMSTIoavHbd9ZvcOhj1");
+        final DatabaseReference userRef = FirebaseDatabase.getInstance().getReference().child("Users/Drivers/");
 
         userRef.addChildEventListener(new ChildEventListener() {
             @Override
@@ -800,20 +773,8 @@ private void hideSoftKeyboard() {
 //            }, 3000);
         }
 
-        private float getBearing(LatLng begin, LatLng end) {
-            double lat = Math.abs(begin.latitude - end.latitude);
-            double lng = Math.abs(begin.longitude - end.longitude);
 
-            if (begin.latitude < end.latitude && begin.longitude < end.longitude)
-                return (float) (Math.toDegrees(Math.atan(lng / lat)));
-            else if (begin.latitude >= end.latitude && begin.longitude < end.longitude)
-                return (float) ((90 - Math.toDegrees(Math.atan(lng / lat))) + 90);
-            else if (begin.latitude >= end.latitude && begin.longitude >= end.longitude)
-                return (float) (Math.toDegrees(Math.atan(lng / lat)) + 180);
-            else if (begin.latitude < end.latitude && begin.longitude >= end.longitude)
-                return (float) ((90 - Math.toDegrees(Math.atan(lng / lat))) + 270);
-            return -1;
-        }
+
 
 }
 
