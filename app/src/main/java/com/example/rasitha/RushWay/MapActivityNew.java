@@ -51,6 +51,7 @@ import com.example.rasitha.RushWay.directionHelpers.TaskLoadedCallback;
 import com.example.rasitha.RushWay.models.Driver;
 import com.example.rasitha.RushWay.models.PlaceInfo;
 import com.example.rasitha.RushWay.models.RWLocation;
+import com.example.rasitha.RushWay.models.Vehicle;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
@@ -773,7 +774,6 @@ private void hideSoftKeyboard() {
                 Log.d(TAG, "databaseError : " + databaseError.getMessage());
             }
         });
-
     }
 
     private void updateBusLocations(){
@@ -807,10 +807,7 @@ private void hideSoftKeyboard() {
             }
         });
 
-
         }
-
-
 String routeString = "[[{lat=6.84556, lng=79.97355}, {lat=6.84556, lng=79.9735}, {lat=6.84549, lng=79.97325}, {lat=6.84539, lng=79.97303}, {lat=6.84526, lng=79.97282}, {lat=6.84517, lng=79.97268}, {lat=6.84517, lng=79.97267}, {lat=6.84516, lng=79.97266}, {lat=6.84515, lng=79.97265}, {lat=6.84514, lng=79.97264}, {lat=6.84513, lng=79.97263}, {lat=6.84512, lng=79.97262}, {lat=6.84511, lng=79.97261}, {lat=6.84511, lng=79.9726}, {lat=6.8451, lng=79.97259}, {lat=6.84509, lng=79.97258}, {lat=6.84508, lng=79.97257}, {lat=6.84508, lng=79.97255}, {lat=6.84507, lng=79.97254}, {lat=6.84506, lng=79.97253}, {lat=6.84506, lng=79.97252}, {lat=6.84505, lng=79.9725}, {lat=6.84505, lng=79.97249}, {lat=6.84504, lng=79.97248}, {lat=6.84503, lng=79.97247}, {lat=6.84503, lng=79.97246}, {lat=6.84502, lng=79.97244}, {lat=6.84502, lng=79.97243}, {lat=6.84501, lng=79.97242}, {lat=6.845, lng=79.97241}, {lat=6.845, lng=79.97239}, {lat=6.84499, lng=79.97238}, {lat=6.84499, lng=79.97237}, {lat=6.84498, lng=79.97236}, {lat=6.84497, lng=79\n" +
         "    .97234}, {lat=6.84497, lng=79.97233}, {lat=6.84496, lng=79.97232}, {lat=6.84496, lng=79.97231}, {lat=6.84495, lng=79.97229}, {lat=6.84494, lng=79.97228}, {lat=6.84494, lng=79.97227}, {lat=6.84493, lng=79.97226}, {lat=6.84493, lng=79.97224}, {lat=6.84492, lng=79.97223}, {lat=6.84491, lng=79.97222}, {lat=6.84491, lng=79.97221}, {lat=6.8449, lng=79.97219}, {lat=6.8449, lng=79.97218}, {lat=6.84489, lng=79.97217}, {lat=6.84488, lng=79.97215}, {lat=6.84488, lng=79.97214}, {lat=6.84487, lng=79.97213}, {lat=6.84486, lng=79.97211}, {lat=6.84486, lng=79.9721}, {lat=6.84486, lng=79.97209}, {lat=6.84485, lng=79.97207}, {lat=6.84485, lng=79.97206}, {lat=6.84484, lng=79.97205}, {lat=6.84484, lng=79.97204}, {lat=6.84483, lng=79.97202}, {lat=6.84483, lng=79.97201}, {lat=6.84482, lng=79.972}, {lat=6.84482, lng=79.97198}, {lat=6.84481, lng=79.97197}, {lat=6.84481, lng=79.97196}, {lat=6.8448, lng=79.97194}, {lat=6.8448, lng=79.97193}, {lat=6.84479, lng=79.97192}, {lat=6.84479, lng=79.97191}, {lat=6.84479\n" +
         "    ,lng=79.97189}, {lat=6.84478, lng=79.97188}, {lat=6.84478, lng=79.97187}, {lat=6.84478, lng=79.97185}, {lat=6.84477, lng=79.97184}, {lat=6.84477, lng=79.97183}, {lat=6.84476, lng=79.97181}, {lat=6.84476, lng=79.9718}, {lat=6.84476, lng=79.97179}, {lat=6.84475, lng=79.97177}, {lat=6.84475, lng=79.97176}, {lat=6.84475, lng=79.97175}, {lat=6.84474, lng=79.97173}, {lat=6.84474, lng=79.97172}, {lat=6.84473, lng=79.97171}, {lat=6.84473, lng=79.97169}, {lat=6.84473, lng=79.97168}, {lat=6.84472, lng=79.97167}, {lat=6.84472, lng=79.97165}, {lat=6.84472, lng=79.97164}, {lat=6.84471, lng=79.97163}, {lat=6.84471, lng=79.97161}, {lat=6.84471, lng=79.9716}, {lat=6.8447, lng=79.97159}, {lat=6.8447, lng=79.97157}, {lat=6.84469, lng=79.97156}, {lat=6.84469, lng=79.97155}, {lat=6.84469, lng=79.97153}, {lat=6.84468, lng=79.97152}, {lat=6.84468, lng=79.97151}, {lat=6.84468, lng=79.97149}, {lat=6.84467, lng=79.97148}, {lat=6.84467, lng=79.97147}, {lat=6.84467, lng=79.97145}, {lat=6.84466, lng=79.97144}, {\n" +
@@ -819,46 +816,52 @@ String routeString = "[[{lat=6.84556, lng=79.97355}, {lat=6.84556, lng=79.9735},
         "    976, lng=79.96454}, {lat=6.83975, lng=79.96446}, {lat=6.83972, lng=79.96433}, {lat=6.83972, lng=79.96431}]]";
 
     @Override
-    public boolean onMarkerClick(Marker marker) {
-
-
+    public boolean onMarkerClick(final Marker marker) {
         //find this marker in driver markers
-        for (DriverMarkers driver_marker : nearbyDrivers) {
+        for (final DriverMarkers driver_marker : nearbyDrivers) {
             if (driver_marker.getM().getId().trim().equals(marker.getId().trim())) {
                 //Toast.makeText(this,"Marker clicked :"+driver_marker.getD().getfName(),Toast.LENGTH_SHORT).show();
                 //driver_marker.getD().
                 slidingDrawer.setVisibility(View.VISIBLE);
 
-                TextView drawer_bus_route;
-                TextView drawer_bus_id;
-                TextView drawer_bus_driver;
-                TextView drawer_available_capacity;
-                Button drawer_waveBtn;
-                ImageView drawer_ad_banner;
-                Button drawer_slideButton;
+                final TextView drawer_bus_route = (TextView) findViewById(R.id.bus_route);
+                final TextView drawer_bus_id= (TextView) findViewById(R.id.bus_id);
+                final TextView drawer_bus_driver = (TextView) findViewById(R.id.bus_driver);
+                final TextView drawer_available_capacity  = (TextView) findViewById(R.id.available_capacity);
+                Button drawer_waveBtn= (Button) findViewById(R.id.Button01);
+                final ImageView drawer_ad_banner = (ImageView) findViewById(R.id.ad_banner);
+                Button drawer_slideButton  = (Button) findViewById(R.id.slideButton);
 
+                final DatabaseReference userRef = FirebaseDatabase.getInstance().getReference().child("Busses/");
 
-                DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Busses");
-
-                ValueEventListener postListener = new ValueEventListener() {
+                final ValueEventListener postListener = new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         // Get Post object and use the values to update the UI
-                        // Post post = dataSnapshot.getValue(Post.class);
-                        // ...
 
+                        for (DataSnapshot bus : dataSnapshot.getChildren()) {
+                            Vehicle bus1 = bus.getValue(Vehicle.class);
+                            if(bus1.getCurrentDriver().equals(driver_marker.getD().getUid())){
+                                Log.d(TAG, "#############"+driver_marker.getD().getUid());
+                                drawer_bus_route.setText(bus1.getRoute().getNo()+" "+bus1.getRoute().getDestination1()+" "+bus1.getRoute().getDestination2());
+                                drawer_bus_id.setText(bus1.getBusId());
+                                drawer_bus_driver.setText(driver_marker.getD().getfName());
+                                drawer_available_capacity.setText(bus1.getAavailableSeats());
+                                marker.setTitle((bus1.getRoute().getNo()+" "+bus1.getRoute().getDestination1()+" "+bus1.getRoute().getDestination2()));
+                                marker.showInfoWindow();
 
+                            }
+                        }
                     }
 
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
                         // Getting Post failed, log a message
                         Log.w(TAG, "loadPost:onCancelled", databaseError.toException());
                         // ...
                     }
                 };
                 userRef.addListenerForSingleValueEvent(postListener);
-
             }
         }
         return false;
