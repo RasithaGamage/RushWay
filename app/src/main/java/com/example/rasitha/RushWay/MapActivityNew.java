@@ -48,6 +48,7 @@ import android.widget.Toast;
 
 import com.example.rasitha.RushWay.directionHelpers.FetchURL;
 import com.example.rasitha.RushWay.directionHelpers.TaskLoadedCallback;
+import com.example.rasitha.RushWay.models.Ad;
 import com.example.rasitha.RushWay.models.Driver;
 import com.example.rasitha.RushWay.models.PlaceInfo;
 import com.example.rasitha.RushWay.models.RWLocation;
@@ -333,6 +334,7 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
             public void run() {
                 Log.d(TAG, "getNearbyBuses() in postDelayed is running");
                 getNearbyBuses();
+                getNearbyAds();
             }
         }, 3000);
 
@@ -736,18 +738,17 @@ private void hideSoftKeyboard() {
 
                     if (dist < 200) {
                         //check nearbyDrivers whether this driver exist or not
-                       // Log.d(TAG, "2 nearby driver : "+driver.child("uid").getValue().toString().trim());
+                        // Log.d(TAG, "2 nearby driver : "+driver.child("uid").getValue().toString().trim());
 
                         Boolean driver_exist_in_nearbyDrivers = false;
-                         uid_that = driver.child("uid").getValue().toString().trim();
-
+                        uid_that = driver.child("uid").getValue().toString().trim();
                         if(nearbyDrivers.size()>0){
                             for(DriverMarkers driver_marker : nearbyDrivers){
                                 uid_this = driver_marker.getD().getUid().trim();
-                               // Log.d(TAG, "3 driver_marker loop = "+ driver_marker.getD().getUid().trim());
+                               //Log.d(TAG, "3 driver_marker loop = "+ driver_marker.getD().getUid().trim());
                                 if(uid_this.equals(uid_that) ){
                                     driver_exist_in_nearbyDrivers = true;
-                                   // Log.d(TAG, "uid_this == uid_that");
+                                   //Log.d(TAG, "uid_this == uid_that");
                                     //update existing drivers marker
                                     LatLng startPosition= driver_marker.getM().getPosition();
                                     LatLng endPosition = llX;
@@ -764,7 +765,65 @@ private void hideSoftKeyboard() {
                                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_bus)));
                             nearbyDrivers.add(new DriverMarkers(markerX,driver.getValue(Driver.class)));
                         }
+                    }
+                }
+            }
 
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Log.d(TAG, "databaseError : " + databaseError.getMessage());
+            }
+        });
+    }
+
+    final static List<Ad> nearbyAds = new ArrayList<>();
+
+    private void getNearbyAds() {
+
+        final DatabaseReference userRef = FirebaseDatabase.getInstance().getReference().child("advertiesments/");
+        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                Log.d(TAG, "1 nearbyAds_array_length: "+nearbyAds.size());
+                String  adId_that ;
+                String adId_this ;
+
+                for (DataSnapshot ad : dataSnapshot.getChildren()) {
+                    //check distance between each driver and my current location
+                    double lat = Double.parseDouble(ad.child("coordinates").child("lat").getValue().toString());
+                    double lon = Double.parseDouble(ad.child("coordinates").child("lon").getValue().toString());
+                    LatLng adlatlng = new LatLng(lat, lon);
+                    LatLng mylatlng = new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
+                    double dist = DriverMarkers.getStraightLineDistance(mylatlng,adlatlng);
+                    LatLng llX = new LatLng(lat,lon);
+
+                    if (dist < 3) {
+                        //check nearbyAds whether this driver exist or not
+                        // Log.d(TAG, "2 nearby driver : "+driver.child("uid").getValue().toString().trim());
+                        Boolean ad_exist_in_nearbyAds = false;
+                        adId_that = ad.child("adId").getValue().toString().trim();
+                        if(nearbyAds.size()>0){
+                            for(Ad ad_near : nearbyAds){
+                                adId_this = ad_near.getAdId().trim();
+                                if(adId_this.equals(adId_that)){
+                                    ad_exist_in_nearbyAds = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if(!ad_exist_in_nearbyAds){
+                            //add driver to nearbyAds list
+
+                            MarkerOptions options = new MarkerOptions()
+                                    .position(adlatlng)
+                                    .title(ad.child("company").getValue().toString()+":"+ad.child("branch").getValue().toString());
+                            mMap.addMarker(options);
+                            nearbyAds.add(ad.getValue(Ad.class));
+                            //pop up ad
+                            showPopup();
+                        }
                     }
                 }
             }
@@ -789,6 +848,7 @@ private void hideSoftKeyboard() {
             @Override
             public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
                 getNearbyBuses();
+                getNearbyAds();
             }
 
             @Override

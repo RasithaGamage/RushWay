@@ -10,6 +10,7 @@ import android.widget.Toast;
 import com.example.rasitha.RushWay.models.Driver;
 import com.example.rasitha.RushWay.models.Owner;
 import com.example.rasitha.RushWay.models.Passenger;
+import com.example.rasitha.RushWay.models.RWLocation;
 import com.example.rasitha.RushWay.models.User;
 import com.google.common.net.InternetDomainName;
 import com.google.firebase.auth.FirebaseAuth;
@@ -47,6 +48,8 @@ public class SigninSuccess extends AppCompatActivity {
 
         if(getIntent().getSerializableExtra("MY_USER_OBJ") instanceof  Driver){
             Driver obj = (Driver) getIntent().getSerializableExtra("MY_USER_OBJ");
+            RWLocation loc = new RWLocation(6.959729, 79.913373);
+            obj.setCurrentLocation(loc);
             Toast.makeText(SigninSuccess.this,((Driver) obj).userType,Toast.LENGTH_SHORT).show();
             obj.setUid(user.getUid());
             mDatabase.child("Users").child("Drivers").child(user.getUid()).setValue(obj);

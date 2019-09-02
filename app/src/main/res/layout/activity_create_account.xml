@@ -56,6 +56,14 @@
             android:orientation="vertical"
             android:padding="40dp"
             android:layout_weight="2">
+            <TextView
+                android:id="@+id/errorText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAlignment="center"
+                android:textColor="#A52626"
+                android:layout_marginBottom="10dp"/>
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -141,10 +149,11 @@
                         android:id="@+id/textphone"/>
 
                     <EditText
+                        android:id="@+id/editTextPhone"
                         android:layout_width="match_parent"
                         android:layout_height="50dp"
                         android:layout_below="@+id/textphone"
-                        android:id="@+id/editTextPhone"/>
+                        android:inputType="phone" />
 
                 </RelativeLayout>
 
@@ -223,19 +232,13 @@
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="50dp"
+                android:layout_marginTop="20dp"
                 android:layout_gravity="center"
                 android:background="@drawable/button_layout"
                 android:text="Next"
                 android:layout_marginBottom="10dp"
                 android:textColor="#3e7cb6"
                 android:id="@+id/submitButton"/>
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColor="#A52626"
-                android:id="@+id/errorText"
-                android:textAlignment="center"/>
 
 
         </LinearLayout>

@@ -87,7 +87,6 @@
     <string-array name="spinner_Content">
         <item>Passenger</item>
         <item>Bus Driver</item>
-        <item>Bus Owner</item>
     </string-array>
 
 </resources>

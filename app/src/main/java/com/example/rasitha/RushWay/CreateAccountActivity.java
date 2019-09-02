@@ -8,6 +8,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -25,6 +27,10 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 
 public class CreateAccountActivity extends AppCompatActivity {
 
@@ -62,11 +68,84 @@ private static final String TAG = "CreateAccountActivity";
         submitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                user_obj = new User(fName.getText().toString(),lName.getText().toString(),
-                        email.getText().toString(),phone.getText().toString(),nic.getText().toString());
 
-                user_obj.setPw(pw2.getText().toString());
-                createAccount();
+
+                if(fName.getText().length()>0 && lName.getText().length()>0 &&
+                phone.getText().length()>0 &&
+                        email.getText().length()>0 &&
+                nic.getText().length()>0 &&
+                        pw1.getText().length()>0 &&
+                pw2.getText().length()>0){
+                    user_obj = new User(fName.getText().toString(),lName.getText().toString(),
+                            email.getText().toString(),phone.getText().toString(),nic.getText().toString());
+
+                    user_obj.setPw(pw2.getText().toString());
+                    createAccount();
+                }
+                else {
+                    errorText.setText("All fields must be filled");
+                }
+            }
+        });
+
+        email.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                String regExpn =
+                        "^(([\\w-]+\\.)+[\\w-]+|([a-zA-Z]{1}|[\\w-]{2,}))@"
+                                +"((([0-1]?[0-9]{1,2}|25[0-5]|2[0-4][0-9])\\.([0-1]?"
+                                +"[0-9]{1,2}|25[0-5]|2[0-4][0-9])\\."
+                                +"([0-1]?[0-9]{1,2}|25[0-5]|2[0-4][0-9])\\.([0-1]?"
+                                +"[0-9]{1,2}|25[0-5]|2[0-4][0-9])){1}|"
+                                +"([a-zA-Z]+[\\w-]+\\.)+[a-zA-Z]{2,4})$";
+
+                CharSequence inputStr = email.getText().toString();
+
+                Pattern pattern = Pattern.compile(regExpn,Pattern.CASE_INSENSITIVE);
+                Matcher matcher = pattern.matcher(inputStr);
+
+                if( matcher.find()){
+                    errorText.setText("");
+                }
+                else if(inputStr==""){
+                    errorText.setText("");
+                }
+                else{
+                    errorText.setText("Invalid Email Address");
+                }
+            }
+        });
+
+        phone.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                if(phone.getText().length()>10){
+                    errorText.setText("Phone number length exceeds 10 characters");
+                }
+                else
+                {
+                    errorText.setText("");
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
 
             }
         });

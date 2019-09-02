@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.Button;
 
 import com.example.rasitha.RushWay.models.Driver;
+import com.example.rasitha.RushWay.models.RWLocation;
 import com.example.rasitha.RushWay.models.User;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;

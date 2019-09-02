@@ -70,15 +70,15 @@ public class CreateAccount2 extends AppCompatActivity {
                     newDriver.setCurrentLocation(x.getCurrentLocation());
                     moveToNextActivity(newDriver,CreateAccountDriver.class);
                 }
-//user chose Owner
-                else if(spinner.getSelectedItem().toString().equals("Bus Owner")){
-                    User x = (User) getIntent().getSerializableExtra("MY_USER_OBJ");
-                    Owner newOwner = new Owner(x.getfName(),x.getlName(),x.geteMail(),x.getPhone(),x.getNic());
-                    newOwner.setUid(x.getUid());
-                    newOwner.setPw(x.getPw());
-                    newOwner.setCurrentLocation(x.getCurrentLocation());
-                    moveToNextActivity(newOwner,CreateAccountDriver.class);
-                }
+////user chose Owner
+//                else if(spinner.getSelectedItem().toString().equals("Bus Owner")){
+//                    User x = (User) getIntent().getSerializableExtra("MY_USER_OBJ");
+//                    Owner newOwner = new Owner(x.getfName(),x.getlName(),x.geteMail(),x.getPhone(),x.getNic());
+//                    newOwner.setUid(x.getUid());
+//                    newOwner.setPw(x.getPw());
+//                    newOwner.setCurrentLocation(x.getCurrentLocation());
+//                    moveToNextActivity(newOwner,CreateAccountDriver.class);
+//                }
 //user chose Passenger
                 else if(spinner.getSelectedItem().toString().equals("Passenger")){
                     User x = (User) getIntent().getSerializableExtra("MY_USER_OBJ");
