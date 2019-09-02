@@ -4,6 +4,13 @@ public class Vehicle {
 
     private String numberPlate;
     private String route;
+    private String make;
+    private String model;
+    private String engineNumber;
+    private String insurance;
+    private String capacity;
+    private String currentDriver;
+
 
     public String getRoute() {
         return route;
@@ -63,15 +70,10 @@ public class Vehicle {
         this.insurance = insurance;
     }
 
-    private String make;
-    private String model;
-    private String engineNumber;
-    private String insurance;
-
     public Vehicle() {
     }
 
-    public Vehicle(String numberPlate, String make, String model, String engineNumber, String insurance) {
+    public Vehicle(String numberPlate,String ) {
         this.numberPlate = numberPlate;
         this.make = make;
         this.model = model;
@@ -79,5 +81,38 @@ public class Vehicle {
         this.insurance = insurance;
     }
 
+
+}
+
+class busRoute{
+
+    String destination1;
+    String destination2;
+    String no;
+
+
+    public String getDestination1() {
+        return destination1;
+    }
+
+    public void setDestination1(String destination1) {
+        this.destination1 = destination1;
+    }
+
+    public String getDestination2() {
+        return destination2;
+    }
+
+    public void setDestination2(String destination2) {
+        this.destination2 = destination2;
+    }
+
+    public String getNo() {
+        return no;
+    }
+
+    public void setNo(String no) {
+        this.no = no;
+    }
 
 }

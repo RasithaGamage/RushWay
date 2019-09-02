@@ -56,7 +56,7 @@ public class  DriverMarkers{
                     lat = v * endPosition.latitude + (1 - v)* startPosition.latitude;
                     LatLng newPos = new LatLng(lat, lng);
 
-                    if(getStraightLineDistance(newPos, lastPos)> 0.0005 ){
+                    if(getStraightLineDistance(newPos, lastPos)> 0.0005 ){//0.0005
 
                         if(flag1 ==1){
                             marker.setPosition(newPos);
@@ -66,8 +66,8 @@ public class  DriverMarkers{
                         lastPos = newPos;
                         //Log.d(TAG, "onAnimationUpdate newPos :"+ newPos);
                     }
-                    mMap.animateCamera(CameraUpdateFactory
-                            .newCameraPosition(new CameraPosition.Builder().target(newPos).zoom(15.5f).build()));
+//                    mMap.animateCamera(CameraUpdateFactory
+//                            .newCameraPosition(new CameraPosition.Builder().target(newPos).zoom(15.5f).build()));
                 }
             }
         });

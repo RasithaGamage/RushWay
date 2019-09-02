@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "897968290725",
+    "firebase_url": "https://rushway-1554016598194.firebaseio.com",
+    "project_id": "rushway-1554016598194",
+    "storage_bucket": "rushway-1554016598194.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:897968290725:android:a821179c1ec82518",
+        "android_client_info": {
+          "package_name": "com.example.rasitha.RushWay"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "897968290725-q4pupv7ljm4l163ktilh4tdnq9mvpir1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.rasitha.RushWay",
+            "certificate_hash": "80fe7ea02b6b358eea60a13e27f64e6616ddd469"
+          }
+        },
+        {
+          "client_id": "897968290725-2oj28sc9nnprlcd505quh0u2ui2bilg3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBWB5NCD9z1RSDhZWgIbjF0yKn9j4iWl20"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "897968290725-2oj28sc9nnprlcd505quh0u2ui2bilg3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

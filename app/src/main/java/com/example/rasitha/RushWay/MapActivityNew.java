@@ -3,6 +3,8 @@ package com.example.rasitha.RushWay;
 import android.Manifest;
 import android.animation.ValueAnimator;
 import android.app.ActionBar;
+import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -12,6 +14,7 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.PowerManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
@@ -33,8 +36,11 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.SlidingDrawer;
 import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -96,7 +102,7 @@ import java.util.Map;
 
 import static com.google.android.gms.location.LocationServices.getFusedLocationProviderClient;
 
-public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallback,GoogleApiClient.OnConnectionFailedListener,TaskLoadedCallback {
+public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, TaskLoadedCallback, GoogleMap.OnMarkerClickListener {
 
     private static final String FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION;
     private static final String COARSE_LOCATION = Manifest.permission.ACCESS_COARSE_LOCATION;
@@ -105,8 +111,8 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
 
     private static final String TAG = "MapActivityNew";
 
-    private AutoCompleteTextView mSearchText ;
-    private ImageView mGps,mInfo;
+    private AutoCompleteTextView mSearchText;
+    private ImageView mGps, mInfo;
     private Spinner mSpinner;
 
 
@@ -131,6 +137,18 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
 
     private static Handler handler;
 
+    PowerManager pm;
+    PowerManager.WakeLock wl;
+
+    Dialog dialog_ad;
+    SlidingDrawer  slidingDrawer;
+    TextView drawer_bus_route;
+    TextView drawer_bus_id;
+    TextView drawer_bus_driver;
+    TextView drawer_available_capacity;
+    Button drawer_waveBtn ; // Button01
+    ImageView drawer_ad_banner;
+    Button drawer_slideButton;
 
 
 
@@ -138,9 +156,8 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
     private long FASTEST_INTERVAL = 2000; /* 2 sec */
 
 
-
     private static final LatLngBounds LAT_LNG_BOUNDS = new LatLngBounds(
-            new LatLng(-40,-168),new LatLng(71,136)
+            new LatLng(-40, -168), new LatLng(71, 136)
     );
 
     @Override
@@ -162,12 +179,25 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
             mMap.setMyLocationEnabled(true);
             mMap.getUiSettings().setMyLocationButtonEnabled(false);
             //"Show My location"(GPS icon) button removed, because our custom search bar will block its view
-           // mMap.getUiSettings()
+            // mMap.getUiSettings()
 
             init();
 
         }
+
+        mMap.setOnMarkerClickListener((GoogleMap.OnMarkerClickListener) this);
+
+        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng latLng) {
+
+//              Toast.makeText(MapActivityNew.this,latLng.toString(),Toast.LENGTH_SHORT).show();
+                slidingDrawer.setVisibility(View.GONE);
+
+            }
+        });
     }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -176,36 +206,55 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
         setContentView(R.layout.activity_map_new);
         // getSupportActionBar().hide();
 
-        dl = (DrawerLayout)findViewById(R.id.activity_main);
-        t = new ActionBarDrawerToggle(this, dl,R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        getSupportActionBar().setTitle("Rushway");
+
+        //keep application running when screen is locked
+        pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, ":myWakeLockTag");
+        //  wl.acquire();
+
+        dialog_ad = new Dialog(this);
+        slidingDrawer = (SlidingDrawer) findViewById(R.id.SlidingDrawer);
+        slidingDrawer.setVisibility(View.GONE);
+
+        dl = (DrawerLayout) findViewById(R.id.activity_main);
+        t = new ActionBarDrawerToggle(this, dl, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         dl.addDrawerListener(t);
         t.syncState();
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("");
 
-        nv = (NavigationView)findViewById(R.id.nv);
+        Button b2 = (Button) findViewById(R.id.Button02) ;
+        Button b3 = (Button) findViewById(R.id.Button03) ;
+        b2.setVisibility(View.GONE);
+        b3.setVisibility(View.GONE);
+
+        nv = (NavigationView) findViewById(R.id.nv);
         nv.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 int id = item.getItemId();
-                switch(id)
-                {
+                switch (id) {
                     case R.id.account:
-                        Toast.makeText(MapActivityNew.this, "My Account",Toast.LENGTH_SHORT).show();break;
-                    case R.id.settings:
-                        Toast.makeText(MapActivityNew.this, "Settings",Toast.LENGTH_SHORT).show();break;
-                    case R.id.mycart:
-                        Toast.makeText(MapActivityNew.this, "My Cart",Toast.LENGTH_SHORT).show();break;
-                    case R.id.logout:
-                    {
-                        Toast.makeText(MapActivityNew.this, "Logged out",Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MapActivityNew.this, "My Account", Toast.LENGTH_SHORT).show();
+                        break;
+//                    case R.id.settings:
+//                        Toast.makeText(MapActivityNew.this, "Settings", Toast.LENGTH_SHORT).show();
+//                        break;
+//                    case R.id.mycart:
+//                        Toast.makeText(MapActivityNew.this, "My Cart", Toast.LENGTH_SHORT).show();
+//                        break;
+                    case R.id.logout: {
+                        Toast.makeText(MapActivityNew.this, "Logged out", Toast.LENGTH_SHORT).show();
                         //Sign out
-                         FirebaseAuth.getInstance().signOut();
-                         userType= null;
-                        Intent newActivityLoad = new Intent(MapActivityNew.this,Home.class);
+                        FirebaseAuth.getInstance().signOut();
+                        userType = null;
+                        // wl.release();
+                        Intent newActivityLoad = new Intent(MapActivityNew.this, Home.class);
                         startActivity(newActivityLoad);
-                         break;
+
+                        break;
 
                     }
                     default:
@@ -224,15 +273,15 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
         list.add("Select location on map");
         list.add("Select location from saved places");
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,  android.R.layout.simple_spinner_item, list);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, list);
         adapter.setDropDownViewResource(R.layout.spinner_item_layout);
         mSpinner.setAdapter(adapter);
 
-        mSearchText = (AutoCompleteTextView) findViewById(R.id.inputSearch) ;
-        mGps = (ImageView) findViewById(R.id.ic_gps) ;
-        mInfo= (ImageView) findViewById(R.id.place_info);
+        mSearchText = (AutoCompleteTextView) findViewById(R.id.inputSearch);
+        mGps = (ImageView) findViewById(R.id.ic_gps);
+        mInfo = (ImageView) findViewById(R.id.place_info);
 
-        mDatabase= FirebaseDatabase.getInstance().getReference();
+        mDatabase = FirebaseDatabase.getInstance().getReference();
         mAuth = FirebaseAuth.getInstance();
 
         getLocationPermission();
@@ -242,51 +291,50 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
 
         userType = null;
 
-        if(mAuth.getCurrentUser()!= null) {
+        if (mAuth.getCurrentUser() != null) {
 
-            Log.d(TAG,"UID: "+fUser.getUid());
-            String nodePaths[] =  {"Users/Owners","Users/Drivers","Users/Passengers"};
+            Log.d(TAG, "UID: " + fUser.getUid());
+            String nodePaths[] = {"Users/Owners", "Users/Drivers", "Users/Passengers"};
 
-                if(userType == null){
-                    for(String path: nodePaths){
+            if (userType == null) {
+                for (String path : nodePaths) {
                     final DatabaseReference userRef1 = FirebaseDatabase.getInstance().getReference().child(path);
                     Query queryRef = userRef1.orderByChild("uid").equalTo(fUser.getUid());
                     queryRef.addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                            for(DataSnapshot userResult : dataSnapshot.getChildren() ){
-                                if(userResult.child("uid").getValue().equals(fUser.getUid())){
+                            for (DataSnapshot userResult : dataSnapshot.getChildren()) {
+                                if (userResult.child("uid").getValue().equals(fUser.getUid())) {
                                     userType = (String) userResult.child("userType").getValue();
-                                    Log.d(TAG,"userType 1 : "+userType);
-
+//                                    Log.d(TAG, "userType 1 : " + userType);
                                 }
                             }
                         }
 
                         @Override
                         public void onCancelled(@NonNull DatabaseError databaseError) {
-                            Log.d(TAG,"databaseError : "+databaseError.getMessage());
+                            Log.d(TAG, "databaseError : " + databaseError.getMessage());
                         }
                     });
                 }
             }
-
         }
 
         startLocationUpdates();
         updateBusLocations();
 
-        if(handler == null ){
+        if (handler == null) {
             handler = new Handler();
         }
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                Log.d(TAG,"getNearbyBuses() in postDelayed is running");
+                Log.d(TAG, "getNearbyBuses() in postDelayed is running");
                 getNearbyBuses();
             }
         }, 3000);
+
     }
 
     private void startLocationUpdates() {
@@ -302,28 +350,34 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
         SettingsClient settingsClient = LocationServices.getSettingsClient(this);
         settingsClient.checkLocationSettings(locationSettingsRequest);
 
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
         getFusedLocationProviderClient(this).requestLocationUpdates(mLocationRequest, new LocationCallback() {
                     @Override
                     public void onLocationResult(LocationResult locationResult) {
                         // do work here
 
-                        if (locationResult.getLastLocation()!=null && mAuth.getCurrentUser()!= null && userType!= null)
-                        {
-                            RWLocation loc = new RWLocation(locationResult.getLastLocation().getLatitude(),locationResult.getLastLocation().getLongitude());
-                            Log.d(TAG,"userType 2: "+userType);
-                            switch (userType){
-                                case "driver":
-                                {
+                        if (locationResult.getLastLocation() != null && mAuth.getCurrentUser() != null && userType != null) {
+                            RWLocation loc = new RWLocation(locationResult.getLastLocation().getLatitude(), locationResult.getLastLocation().getLongitude());
+//                            Log.d(TAG, "userType 2: " + userType);
+                            switch (userType) {
+                                case "driver": {
                                     mDatabase.child("Users").child("Drivers").child(mAuth.getCurrentUser().getUid()).child("currentLocation").setValue(loc);
                                     break;
                                 }
-                                case "passenger":
-                                {
+                                case "passenger": {
                                     mDatabase.child("Users").child("Passengers").child(mAuth.getCurrentUser().getUid()).child("currentLocation").setValue(loc);
                                     break;
                                 }
-                                case "owner":
-                                {
+                                case "owner": {
                                     mDatabase.child("Users").child("Owners").child(mAuth.getCurrentUser().getUid()).child("currentLocation").setValue(loc);
                                     break;
                                 }
@@ -706,7 +760,7 @@ private void hideSoftKeyboard() {
                             //add driver to nearbyDrivers list
                             Marker markerX = mMap.addMarker(new MarkerOptions().position(llX)
                                     .flat(true)
-                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_car)));
+                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_bus)));
                             nearbyDrivers.add(new DriverMarkers(markerX,driver.getValue(Driver.class)));
                         }
 
@@ -757,7 +811,77 @@ private void hideSoftKeyboard() {
         }
 
 
+String routeString = "[[{lat=6.84556, lng=79.97355}, {lat=6.84556, lng=79.9735}, {lat=6.84549, lng=79.97325}, {lat=6.84539, lng=79.97303}, {lat=6.84526, lng=79.97282}, {lat=6.84517, lng=79.97268}, {lat=6.84517, lng=79.97267}, {lat=6.84516, lng=79.97266}, {lat=6.84515, lng=79.97265}, {lat=6.84514, lng=79.97264}, {lat=6.84513, lng=79.97263}, {lat=6.84512, lng=79.97262}, {lat=6.84511, lng=79.97261}, {lat=6.84511, lng=79.9726}, {lat=6.8451, lng=79.97259}, {lat=6.84509, lng=79.97258}, {lat=6.84508, lng=79.97257}, {lat=6.84508, lng=79.97255}, {lat=6.84507, lng=79.97254}, {lat=6.84506, lng=79.97253}, {lat=6.84506, lng=79.97252}, {lat=6.84505, lng=79.9725}, {lat=6.84505, lng=79.97249}, {lat=6.84504, lng=79.97248}, {lat=6.84503, lng=79.97247}, {lat=6.84503, lng=79.97246}, {lat=6.84502, lng=79.97244}, {lat=6.84502, lng=79.97243}, {lat=6.84501, lng=79.97242}, {lat=6.845, lng=79.97241}, {lat=6.845, lng=79.97239}, {lat=6.84499, lng=79.97238}, {lat=6.84499, lng=79.97237}, {lat=6.84498, lng=79.97236}, {lat=6.84497, lng=79\n" +
+        "    .97234}, {lat=6.84497, lng=79.97233}, {lat=6.84496, lng=79.97232}, {lat=6.84496, lng=79.97231}, {lat=6.84495, lng=79.97229}, {lat=6.84494, lng=79.97228}, {lat=6.84494, lng=79.97227}, {lat=6.84493, lng=79.97226}, {lat=6.84493, lng=79.97224}, {lat=6.84492, lng=79.97223}, {lat=6.84491, lng=79.97222}, {lat=6.84491, lng=79.97221}, {lat=6.8449, lng=79.97219}, {lat=6.8449, lng=79.97218}, {lat=6.84489, lng=79.97217}, {lat=6.84488, lng=79.97215}, {lat=6.84488, lng=79.97214}, {lat=6.84487, lng=79.97213}, {lat=6.84486, lng=79.97211}, {lat=6.84486, lng=79.9721}, {lat=6.84486, lng=79.97209}, {lat=6.84485, lng=79.97207}, {lat=6.84485, lng=79.97206}, {lat=6.84484, lng=79.97205}, {lat=6.84484, lng=79.97204}, {lat=6.84483, lng=79.97202}, {lat=6.84483, lng=79.97201}, {lat=6.84482, lng=79.972}, {lat=6.84482, lng=79.97198}, {lat=6.84481, lng=79.97197}, {lat=6.84481, lng=79.97196}, {lat=6.8448, lng=79.97194}, {lat=6.8448, lng=79.97193}, {lat=6.84479, lng=79.97192}, {lat=6.84479, lng=79.97191}, {lat=6.84479\n" +
+        "    ,lng=79.97189}, {lat=6.84478, lng=79.97188}, {lat=6.84478, lng=79.97187}, {lat=6.84478, lng=79.97185}, {lat=6.84477, lng=79.97184}, {lat=6.84477, lng=79.97183}, {lat=6.84476, lng=79.97181}, {lat=6.84476, lng=79.9718}, {lat=6.84476, lng=79.97179}, {lat=6.84475, lng=79.97177}, {lat=6.84475, lng=79.97176}, {lat=6.84475, lng=79.97175}, {lat=6.84474, lng=79.97173}, {lat=6.84474, lng=79.97172}, {lat=6.84473, lng=79.97171}, {lat=6.84473, lng=79.97169}, {lat=6.84473, lng=79.97168}, {lat=6.84472, lng=79.97167}, {lat=6.84472, lng=79.97165}, {lat=6.84472, lng=79.97164}, {lat=6.84471, lng=79.97163}, {lat=6.84471, lng=79.97161}, {lat=6.84471, lng=79.9716}, {lat=6.8447, lng=79.97159}, {lat=6.8447, lng=79.97157}, {lat=6.84469, lng=79.97156}, {lat=6.84469, lng=79.97155}, {lat=6.84469, lng=79.97153}, {lat=6.84468, lng=79.97152}, {lat=6.84468, lng=79.97151}, {lat=6.84468, lng=79.97149}, {lat=6.84467, lng=79.97148}, {lat=6.84467, lng=79.97147}, {lat=6.84467, lng=79.97145}, {lat=6.84466, lng=79.97144}, {\n" +
+        "    lat=6.84466, lng=79.97143}, {lat=6.84465, lng=79.97141}, {lat=6.84464, lng=79.97125}, {lat=6.8445, lng=79.9698}, {lat=6.84451, lng=79.96978}, {lat=6.84451, lng=79.96976}, {lat=6.84452, lng=79.96975}, {lat=6.84455, lng=79.96972}, {lat=6.84455, lng=79.96972}, {lat=6.84449, lng=79.96964}, {lat=6.84447, lng=79.96959}, {lat=6.84444, lng=79.96953}, {lat=6.84442, lng=79.96946}, {lat=6.84425, lng=79.96862}, {lat=6.84414, lng=79.96811}, {lat=6.84408, lng=79.96786}, {lat=6.84403, lng=79.96763}, {lat=6.84399, lng=79.9675}, {lat=6.84393, lng=79.96729}, {lat=6.84392, lng=79.96726}, {lat=6.84388, lng=79.96713}, {lat=6.84385, lng=79.96705}, {lat=6.84381, lng=79.96697}, {lat=6.84373, lng=79.96681}, {lat=6.84368, lng=79.96673}, {lat=6.8435, lng=79.96662}, {lat=6.84342, lng=79.96652}, {lat=6.84332, lng=79.96641}, {lat=6.84317, lng=79.96628}, {lat=6.84294, lng=79.96604}, {lat=6.84274, lng=79.96575}, {lat=6.84228, lng=79.96508}, {lat=6.84213, lng=79.96478}, {lat=6.84208, lng=79.96467}, {lat=6.84199, lng=7\n" +
+        "    9.96453}, {lat=6.84199, lng=79.96453}, {lat=6.8419, lng=79.96457}, {lat=6.84186, lng=79.96459}, {lat=6.84179, lng=79.96459}, {lat=6.84179, lng=79.96459}, {lat=6.84179, lng=79.9646}, {lat=6.84178, lng=79.96461}, {lat=6.84178, lng=79.96462}, {lat=6.84177, lng=79.96463}, {lat=6.84176, lng=79.96464}, {lat=6.84176, lng=79.96465}, {lat=6.84175, lng=79.96465}, {lat=6.84174, lng=79.96466}, {lat=6.84169, lng=79.96475}, {lat=6.84153, lng=79.96501}, {lat=6.84153, lng=79.96501}, {lat=6.84144, lng=79.96507}, {lat=6.84142, lng=79.96508}, {lat=6.84136, lng=79.96512}, {lat=6.84132, lng=79.96514}, {lat=6.84127, lng=79.96515}, {lat=6.84123, lng=79.96516}, {lat=6.8412, lng=79.96516}, {lat=6.84117, lng=79.96515}, {lat=6.84113, lng=79.96514}, {lat=6.84105, lng=79.96511}, {lat=6.84089, lng=79.96504}, {lat=6.84086, lng=79.96503}, {lat=6.84067, lng=79.96496}, {lat=6.84022, lng=79.96481}, {lat=6.84016, lng=79.9648}, {lat=6.83982, lng=79.9647}, {lat=6.83977, lng=79.96469}, {lat=6.83977, lng=79.96469}, {lat=6.83\n" +
+        "    976, lng=79.96454}, {lat=6.83975, lng=79.96446}, {lat=6.83972, lng=79.96433}, {lat=6.83972, lng=79.96431}]]";
+
+    @Override
+    public boolean onMarkerClick(Marker marker) {
 
 
+        //find this marker in driver markers
+        for (DriverMarkers driver_marker : nearbyDrivers) {
+            if (driver_marker.getM().getId().trim().equals(marker.getId().trim())) {
+                //Toast.makeText(this,"Marker clicked :"+driver_marker.getD().getfName(),Toast.LENGTH_SHORT).show();
+                //driver_marker.getD().
+                slidingDrawer.setVisibility(View.VISIBLE);
+
+                TextView drawer_bus_route;
+                TextView drawer_bus_id;
+                TextView drawer_bus_driver;
+                TextView drawer_available_capacity;
+                Button drawer_waveBtn;
+                ImageView drawer_ad_banner;
+                Button drawer_slideButton;
+
+
+                DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Busses");
+
+                ValueEventListener postListener = new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        // Get Post object and use the values to update the UI
+                        // Post post = dataSnapshot.getValue(Post.class);
+                        // ...
+
+
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        // Getting Post failed, log a message
+                        Log.w(TAG, "loadPost:onCancelled", databaseError.toException());
+                        // ...
+                    }
+                };
+                userRef.addListenerForSingleValueEvent(postListener);
+
+            }
+        }
+        return false;
+    }
+
+    public  void showPopup(){
+
+        dialog_ad.setContentView(R.layout.custompopup);
+
+        RelativeLayout popuplayout = dialog_ad.findViewById(R.id.popuplayout);
+        ImageView ad_image = dialog_ad.findViewById(R.id.banner_image);
+        Button see_more_button = dialog_ad.findViewById(R.id.see_more);
+        Button close_dialog = dialog_ad.findViewById(R.id.btn_pop_close);
+
+        popuplayout.setAlpha(50);
+
+        close_dialog.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog_ad.dismiss();
+            }
+        });
+        dialog_ad.show();
+    }
 }
 

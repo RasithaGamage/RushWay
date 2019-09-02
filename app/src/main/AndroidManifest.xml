@@ -7,14 +7,17 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
 
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="RushWay"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
-        <activity android:name=".SigninSuccess"></activity>
+        android:theme="@style/AppTheme"
+        android:hardwareAccelerated="true">
+
+        <activity android:name=".SigninSuccess" />
         <activity android:name=".CreateAccountDriver" />
         <activity android:name=".Home">
             <intent-filter>
@@ -34,7 +37,8 @@
             android:value="@integer/google_play_services_version" />
 
         <activity android:name=".LeaderBoardActivity" />
-        <activity android:name=".MapActivityNew" />
+        <activity android:name=".MapActivityNew"
+                  android:screenOrientation="portrait"/>
         <activity android:name=".CreateAccountActivity" />
         <activity android:name=".CreateAccount2" />
     </application>
