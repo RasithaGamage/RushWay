@@ -212,7 +212,7 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
         //keep application running when screen is locked
         pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
         wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, ":myWakeLockTag");
-        //  wl.acquire();
+        wl.acquire();
 
         dialog_ad = new Dialog(this);
         slidingDrawer = (SlidingDrawer) findViewById(R.id.SlidingDrawer);
@@ -251,7 +251,7 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
                         //Sign out
                         FirebaseAuth.getInstance().signOut();
                         userType = null;
-                        // wl.release();
+                         wl.release();
                         Intent newActivityLoad = new Intent(MapActivityNew.this, Home.class);
                         startActivity(newActivityLoad);
 

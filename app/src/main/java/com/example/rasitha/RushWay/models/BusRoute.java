@@ -17,7 +17,6 @@ public class BusRoute{
         this.no = no;
     }
 
-
     public String getDestination1() {
         return destination1;
     }

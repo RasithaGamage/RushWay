@@ -79,7 +79,6 @@ public class Home extends AppCompatActivity {
             init();
         }
 
-
         btnLeaderBoard.setOnClickListener(new View.OnClickListener(){
                                        @Override
                                        public void onClick(View v){
@@ -114,8 +113,6 @@ public class Home extends AppCompatActivity {
     }
 
     private void checkLogin() {
-
-
             mAuth.signInWithEmailAndPassword(editTextEmail.getText().toString(), editTextPw.getText().toString())
                     .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                         @Override
@@ -152,7 +149,6 @@ public class Home extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-
 
     }
 
