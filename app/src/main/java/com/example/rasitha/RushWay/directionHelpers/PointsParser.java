@@ -52,10 +52,8 @@ public class PointsParser extends AsyncTask<String, Integer, List<List<HashMap<S
 //                int start = i * maxLogSize;
 //                int end = (i+1) * maxLogSize;
 //                end = end > rrr.length() ? rrr.length() : end;
-//                Log.v("mylog", rrr.substring(start, end));
+//                Log.v("**********", rrr.substring(start, end));
 //            }
-
-
 
         } catch (Exception e) {
             Log.d("mylog", e.toString());

@@ -49,6 +49,7 @@ import android.widget.Toast;
 import com.example.rasitha.RushWay.directionHelpers.FetchURL;
 import com.example.rasitha.RushWay.directionHelpers.TaskLoadedCallback;
 import com.example.rasitha.RushWay.models.Ad;
+import com.example.rasitha.RushWay.models.BusRoute;
 import com.example.rasitha.RushWay.models.Driver;
 import com.example.rasitha.RushWay.models.PlaceInfo;
 import com.example.rasitha.RushWay.models.RWLocation;
@@ -398,14 +399,13 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
             mCurrentPolyline.remove();
         }
         mCurrentPolyline = mMap.addPolyline((PolylineOptions) values[0]);
+
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
         if(t.onOptionsItemSelected(item))
             return true;
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -414,14 +414,12 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
         String searchString = mSearchText.getText().toString();
         Geocoder geocoder = new Geocoder(MapActivityNew.this);
         List<Address> list = new ArrayList<>();
-
         try{
             list = geocoder.getFromLocationName(searchString,1);
         }
         catch (IOException e) {
             Log.e(TAG,"geoLocate: IOException"+ e.getMessage());
         }
-
         if(list.size()>0){
             Address address = list.get(0);
 
@@ -533,7 +531,14 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
                         if(task.isSuccessful()){
                             Log.d(TAG,"onComplete: found location !");
                             Location currentLocation = (Location) task.getResult();
-                            mCurrentLocation = currentLocation;
+                            // mCurrentLocation = currentLocation;
+                            ////////////////temporary//////////////////
+                            Location LL = new  Location("");
+                            LL.setLatitude(6.971746);
+                            LL.setLongitude(79.916779);
+                            //////////////////temporary////////////////
+
+                            mCurrentLocation = LL;
                             moveCamera( new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude()),DEFAULT_ZOOM,"My location");
                         }
                         else{
@@ -572,10 +577,15 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
                         .position(new LatLng(mCurrentLocation.getLatitude(),mCurrentLocation.getLongitude()))
                         .title("My Location");
                 mMap.addMarker(options1);
+//                LatLng l1 = new LatLng(7.005272, 79.954381);//kadawatha
+//                LatLng l = new LatLng(6.933064, 79.855696);//pettah
+//                LatLng l2 = new LatLng(6.774470, 79.882941);//moratuwa
+//                showDirections(l,l2, "driving");
 
                 showDirections(new LatLng(mCurrentLocation.getLatitude(),mCurrentLocation.getLongitude())
                         ,latLng
                         , "driving");
+
 
             }
             catch (NullPointerException ex){
@@ -679,9 +689,14 @@ private void hideSoftKeyboard() {
         }
     };
 
-    private void showDirections(LatLng origin,LatLng destination, String travelMode){
+private void showDirections(LatLng origin,LatLng destination, String travelMode){
         String url = getDirectionsUrl(origin,destination,travelMode);
         new FetchURL(MapActivityNew.this).execute(url,"driving");
+
+        ////////////////////////////////////////////
+            MyAsyncTask runner = new MyAsyncTask();
+            runner.execute(origin,destination);
+        ////////////////////////////////////////////
     }
 
     private String getDirectionsUrl(LatLng origin,LatLng destination, String travelMode ){
@@ -946,5 +961,10 @@ String routeString = "[[{lat=6.84556, lng=79.97355}, {lat=6.84556, lng=79.9735},
         });
         dialog_ad.show();
     }
+
+
+
+
+
 }
 

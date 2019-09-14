@@ -97,7 +97,6 @@ private static final String TAG = "CreateAccountActivity";
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
-
             }
 
             @Override
