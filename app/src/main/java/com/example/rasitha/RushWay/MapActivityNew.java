@@ -3,6 +3,7 @@ package com.example.rasitha.RushWay;
 import android.Manifest;
 import android.animation.ValueAnimator;
 import android.app.ActionBar;
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
@@ -27,8 +28,10 @@ import android.os.Bundle;
 import android.text.Html;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.LinearInterpolator;
@@ -37,8 +40,11 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.SlidingDrawer;
 import android.widget.Spinner;
@@ -100,6 +106,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -144,6 +151,7 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
     PowerManager.WakeLock wl;
 
     Dialog dialog_ad;
+    Dialog dialog_bus;
     SlidingDrawer  slidingDrawer;
     TextView drawer_bus_route;
     TextView drawer_bus_id;
@@ -217,6 +225,7 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
         wl.acquire();
 
         dialog_ad = new Dialog(this);
+        dialog_bus = new Dialog(this);
         slidingDrawer = (SlidingDrawer) findViewById(R.id.SlidingDrawer);
         slidingDrawer.setVisibility(View.GONE);
 
@@ -368,7 +377,6 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
                     @Override
                     public void onLocationResult(LocationResult locationResult) {
                         // do work here
-
                         if (locationResult.getLastLocation() != null && mAuth.getCurrentUser() != null && userType != null) {
                             RWLocation loc = new RWLocation(locationResult.getLastLocation().getLatitude(), locationResult.getLastLocation().getLongitude());
 //                            Log.d(TAG, "userType 2: " + userType);
@@ -428,6 +436,7 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
             moveCamera(new LatLng(address.getLatitude(),address.getLongitude()),DEFAULT_ZOOM,address.getAddressLine(0));
         }
     }
+
 
     private void init(){
         Log.d(TAG,"init: initializing");
@@ -496,7 +505,6 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
         if(ContextCompat.checkSelfPermission(this.getApplicationContext(),
                 FINE_LOCATION) == PackageManager.PERMISSION_GRANTED){
 
-
             if(ContextCompat.checkSelfPermission(this.getApplicationContext(),
                     COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED){
                 mLocationPermissionGranted =true;
@@ -507,8 +515,6 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
                         permissions,
                         LOCATION_PERMISSION_REQUEST_CODE);
             }
-
-
         }
         else{
             ActivityCompat.requestPermissions(this,
@@ -517,11 +523,9 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
         }
     }
 
-
     private void getLDeviceLocation(){
         Log.d(TAG,"getDeviceLocation: getting the devices current location");
         mFusedLocationProviderClient = getFusedLocationProviderClient(this);
-
         try{
             if(mLocationPermissionGranted){
                 Task location = mFusedLocationProviderClient.getLastLocation();
@@ -534,8 +538,8 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
                             // mCurrentLocation = currentLocation;
                             ////////////////temporary//////////////////
                             Location LL = new  Location("");
-                            LL.setLatitude(6.971746);
-                            LL.setLongitude(79.916779);
+                            LL.setLatitude(6.971746); // kadawatha bus stand7.005134,79.954650   kelaniya uni 6.971746,79.916779
+                            LL.setLongitude(79.916779); //floating market 6.933178, 79.855407
                             //////////////////temporary////////////////
 
                             mCurrentLocation = LL;
@@ -552,14 +556,13 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
         }catch (SecurityException e){
             Log.e(TAG,"getLDeviceLocation: SecurityException: "+e.getMessage());
         }
-
     }
 
     private void moveCamera(LatLng latLng, float zoom,PlaceInfo placeinfo){
         Log.d(TAG,"moveCamer: moving the camera to: lat:"+latLng.latitude+" long:"+latLng.longitude);
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng,zoom));
 
-        mMap.clear();
+//        mMap.clear();
         if(placeinfo !=null){
             try{
                 String snippet = "Address" + placeinfo.getAddress() +"\n"
@@ -577,21 +580,17 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
                         .position(new LatLng(mCurrentLocation.getLatitude(),mCurrentLocation.getLongitude()))
                         .title("My Location");
                 mMap.addMarker(options1);
+
 //                LatLng l1 = new LatLng(7.005272, 79.954381);//kadawatha
 //                LatLng l = new LatLng(6.933064, 79.855696);//pettah
 //                LatLng l2 = new LatLng(6.774470, 79.882941);//moratuwa
 //                showDirections(l,l2, "driving");
 
-                showDirections(new LatLng(mCurrentLocation.getLatitude(),mCurrentLocation.getLongitude())
-                        ,latLng
-                        , "driving");
-
-
+                showDirections(new LatLng(mCurrentLocation.getLatitude(),mCurrentLocation.getLongitude()),latLng,"transit");
             }
             catch (NullPointerException ex){
                 Log.e(TAG,"moveCamera: NullPointerException "+ex.getMessage());
             }
-
         }else
         {
             mMap.addMarker(new MarkerOptions().position(latLng));
@@ -610,7 +609,6 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
                     .title(title);
             mMap.addMarker(options);
         }
-
         hideSoftKeyboard();
     }
 
@@ -637,9 +635,7 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
 private void hideSoftKeyboard() {
         this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
     }
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
     private AdapterView.OnItemClickListener mAutoCompleteClickListener  = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -690,25 +686,23 @@ private void hideSoftKeyboard() {
     };
 
 private void showDirections(LatLng origin,LatLng destination, String travelMode){
-        String url = getDirectionsUrl(origin,destination,travelMode);
+        String url = getDirectionsUrl(origin,destination,travelMode,"bus");
         new FetchURL(MapActivityNew.this).execute(url,"driving");
-
         ////////////////////////////////////////////
-            MyAsyncTask runner = new MyAsyncTask();
+            MyAsyncTask runner = new MyAsyncTask(this);
             runner.execute(origin,destination);
         ////////////////////////////////////////////
     }
 
-    private String getDirectionsUrl(LatLng origin,LatLng destination, String travelMode ){
+    private String getDirectionsUrl(LatLng origin,LatLng destination, String travelMode, String transitMode ){
 
         String str_origin = "origin=" + origin.latitude + "," + origin.longitude;
         String str_dest = "destination=" + destination.latitude + "," + destination.longitude ;
         String mode = "mode="+travelMode;
-        String params  = str_origin+"&"+str_dest+"&"+mode;
+        String tranMode = "transit_mode=" +transitMode;
+        String params  = str_origin+"&"+str_dest+"&"+mode+"&"+tranMode;
         String output = "json";
-
         String url =  "https://maps.googleapis.com/maps/api/directions/"+output+"?"+params+"&key="+BuildConfig.ApiKey;
-
         return url;
     }
 
@@ -724,7 +718,6 @@ private void showDirections(LatLng origin,LatLng destination, String travelMode)
             startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(startMain);
         }
-
     }
 
     final static List<DriverMarkers> nearbyDrivers = new ArrayList<>();
@@ -964,7 +957,48 @@ String routeString = "[[{lat=6.84556, lng=79.97355}, {lat=6.84556, lng=79.9735},
 
 
 
-
-
 }
+
+class CustomList extends ArrayAdapter<String>{
+    private final Activity context;
+    private final List<String> busNumberArr;
+    private final List<String> fromArr;
+    public CustomList(Activity context,List<String> busNumberArr,List<String> fromArr) {
+        super(context, R.layout.bus_suggestion, busNumberArr);
+        this.context = context;
+        this.busNumberArr = busNumberArr;
+        this.fromArr = fromArr;
+    }
+
+    @Override
+    public View getView(int position, View view, ViewGroup parent) {
+        Log.d("XXXX", "KKKK");
+        LayoutInflater inflater = context.getLayoutInflater();
+        View rowView= inflater.inflate(R.layout.bus_suggestion, null, true);
+        TextView TextView_busNumber = (TextView) rowView.findViewById(R.id.busNumber);
+        TextView TextView_from = (TextView) rowView.findViewById(R.id.from);
+        TextView get = (TextView) rowView.findViewById(R.id.get);
+        CheckBox cb = (CheckBox) rowView.findViewById(R.id.checkBox);
+
+        if(busNumberArr.size()>0){
+            Log.d("XXXX", "YYYY");
+            TextView_busNumber.setText(busNumberArr.get(position));
+            TextView_from.setText(fromArr.get(position));
+            TextView_from.setVisibility(View.VISIBLE);
+            cb.setVisibility(View.VISIBLE);
+            get.setVisibility(View.VISIBLE);
+        }
+        else
+        { Log.d("XXXX", "ZZZZ");
+            TextView_busNumber.setText("NO BUSES FOUND !");
+            TextView_from.setVisibility(View.GONE);
+            cb.setVisibility(View.GONE);
+            get.setVisibility(View.GONE);
+        }
+
+
+        return rowView;
+    }
+}
+
 

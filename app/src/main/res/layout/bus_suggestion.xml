@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_margin="20dp"
+        android:padding="20dp"
+        android:background="#ffff"
+        android:id="@+id/bus_suggestion">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Get"
+            android:textSize="50px"
+            android:textColor="#000000"
+            android:id="@+id/get"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="70px"
+            android:textColor="#000000"
+            android:id="@+id/busNumber"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="from KELANIYA"
+            android:textSize="50px"
+            android:textColor="#000000"
+            android:id="@+id/from"
+            />
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="100px"
+            android:text="show on map"
+            android:id="@+id/checkBox"
+            />
+
+    </LinearLayout>
