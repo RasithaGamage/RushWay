@@ -44,7 +44,7 @@ public class SigninSuccess extends AppCompatActivity {
 
         if(getIntent().getSerializableExtra("MY_USER_OBJ") instanceof  Driver){
             Driver obj = (Driver) getIntent().getSerializableExtra("MY_USER_OBJ");
-            RWLocation loc = new RWLocation(6.959729, 79.913373);
+            RWLocation loc = new RWLocation(Long.parseLong("6.959729"), Long.parseLong("79.913373"));
             obj.setCurrentLocation(loc);
             Toast.makeText(SigninSuccess.this,((Driver) obj).userType,Toast.LENGTH_SHORT).show();
             obj.setUid(user.getUid());

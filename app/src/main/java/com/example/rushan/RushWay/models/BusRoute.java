@@ -81,8 +81,8 @@ public class BusRoute{
         JsonArray jsonObject =  jsonParser.parse(x).getAsJsonArray();
 
         for (int i = 0; i < jsonObject.size(); i++) {
-            double lat = jsonObject.get(i).getAsJsonObject().get("lat").getAsDouble();
-            double lng = jsonObject.get(i).getAsJsonObject().get("lng").getAsDouble();
+            Long lat = jsonObject.get(i).getAsJsonObject().get("lat").getAsLong();
+            Long lng = jsonObject.get(i).getAsJsonObject().get("lng").getAsLong();
             RWLocation loc = new RWLocation(lat,lng);
             path.add(loc);
         }

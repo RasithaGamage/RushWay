@@ -51,8 +51,8 @@ public class MyAsyncTask  extends AsyncTask<LatLng, String, String> {
         final LatLng origin = params[0];
         LatLng destination =  params[1];
 
-        final RWLocation start = new RWLocation(origin.latitude,origin.longitude);
-        final RWLocation end = new RWLocation(destination.latitude,destination.longitude);
+        final RWLocation start = new RWLocation(Double.doubleToLongBits(origin.latitude) ,Double.doubleToLongBits(origin.longitude));
+        final RWLocation end = new RWLocation(Double.doubleToLongBits(destination.latitude),Double.doubleToLongBits(destination.longitude));
 
         final List<Vehicle> busList = new ArrayList<>(); //get data from firebase to populate the array
         final List<Vehicle> match_start_bus = new ArrayList<>();
@@ -119,7 +119,7 @@ public class MyAsyncTask  extends AsyncTask<LatLng, String, String> {
 
                         for (String s: starting_bus_route_arr) {
                             //convert s into a LatLng
-                            RWLocation s_lt = new RWLocation(Double.parseDouble(s.split(",")[0].substring(4)),Double.parseDouble(s.split(",")[1].substring(4)));
+                            RWLocation s_lt = new RWLocation(Long.parseLong(s.split(",")[0].substring(4)),Long.parseLong(s.split(",")[1].substring(4)));
 //                            for(String x:ending_bus_route_arr){
 //                                RWLocation x_lt = new RWLocation(Double.parseDouble(x.split(",")[0].substring(4)),Double.parseDouble(x.split(",")[1].substring(4)));
 //                                //convert x into LatLng

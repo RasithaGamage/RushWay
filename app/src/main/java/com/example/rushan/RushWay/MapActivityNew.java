@@ -6,6 +6,8 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -22,6 +24,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -360,7 +363,7 @@ public class MapActivityNew extends AppCompatActivity implements OnMapReadyCallb
                     public void onLocationResult(LocationResult locationResult) {
                         // do work here
                         if (locationResult.getLastLocation() != null && mAuth.getCurrentUser() != null && userType != null) {
-                            RWLocation loc = new RWLocation(locationResult.getLastLocation().getLatitude(), locationResult.getLastLocation().getLongitude());
+                            RWLocation loc = new RWLocation(Double.doubleToLongBits(locationResult.getLastLocation().getLatitude()), Double.doubleToLongBits(locationResult.getLastLocation().getLongitude()));
 //                            Log.d(TAG, "userType 2: " + userType);
                             switch (userType) {
                                 case "driver": {
@@ -792,6 +795,7 @@ private void showDirections(LatLng origin,LatLng destination, String travelMode)
                     //check distance between each driver and my current location
                     double lat = Double.parseDouble(ad.child("coordinates").child("lat").getValue().toString());
                     double lon = Double.parseDouble(ad.child("coordinates").child("lon").getValue().toString());
+
                     LatLng adlatlng = new LatLng(lat, lon);
                     LatLng mylatlng = new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
                     double dist = DriverMarkers.getStraightLineDistance(mylatlng,adlatlng);
@@ -929,22 +933,27 @@ String routeString = "[[{lat=6.84556, lng=79.97355}, {lat=6.84556, lng=79.9735},
     public  void showPopup(){
 
         dialog_ad.setContentView(R.layout.custompopup);
+        for (final Ad ad : nearbyAds){
+            RelativeLayout popuplayout = dialog_ad.findViewById(R.id.popuplayout);
+            ImageView ad_image = dialog_ad.findViewById(R.id.banner_image);
+            Button see_more_button = dialog_ad.findViewById(R.id.see_more);
+            Button close_dialog = dialog_ad.findViewById(R.id.btn_pop_close);
+            String s = ad.getImage().toString().replace("data:image/jpeg;base64,","");
+            byte[] decodedString = Base64.decode( s, Base64.DEFAULT);
 
-        RelativeLayout popuplayout = dialog_ad.findViewById(R.id.popuplayout);
-        ImageView ad_image = dialog_ad.findViewById(R.id.banner_image);
-        Button see_more_button = dialog_ad.findViewById(R.id.see_more);
-        Button close_dialog = dialog_ad.findViewById(R.id.btn_pop_close);
+            Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+            ad_image.setImageBitmap(decodedByte);
+            popuplayout.setAlpha(50);
 
-        popuplayout.setAlpha(50);
+            dialog_ad.show();
 
-        close_dialog.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dialog_ad.dismiss();
-            }
-        });
-        dialog_ad.show();
-
+            close_dialog.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    dialog_ad.dismiss();
+                }
+            });
+        }
     }
 }
 

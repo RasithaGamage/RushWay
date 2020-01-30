@@ -6,11 +6,11 @@ public class Ad {
     private String adId;
     private String company ;
     RWLocation coordinates ;
-    private String lat ;
-    private String lon ;
+    private Long lat ;
+    private Long lon ;
     private String image ;
 
-    public Ad(String branch, String adId, String company, RWLocation coordinates, String lat, String lon, String image, int priority_level, int status) {
+    public Ad(String branch, String adId, String company, RWLocation coordinates, Long lat, Long lon, String image, int priority_level, int status) {
         this.branch = branch;
         this.adId = adId;
         this.company = company;
@@ -59,19 +59,19 @@ public class Ad {
         this.coordinates = coordinates;
     }
 
-    public String getLat() {
+    public Long getLat() {
         return lat;
     }
 
-    public void setLat(String lat) {
+    public void setLat(Long lat) {
         this.lat = lat;
     }
 
-    public String getLon() {
+    public Long getLon() {
         return lon;
     }
 
-    public void setLon(String lon) {
+    public void setLon(Long lon) {
         this.lon = lon;
     }
 
